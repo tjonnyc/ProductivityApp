@@ -1,25 +1,17 @@
-# ReduxSimpleStarter
+#<Productivity App>
+<Productivity App> is a Chrome extension for tracking personal browsing behavior so that users better understand how they spend their time online.
 
-Interested in learning [Redux](https://www.udemy.com/react-redux/)?
+##Tech Stack
+* React with Redux
+* Node
+* Express
 
-###Getting Started###
+##Installation (local build)
 
-There are two methods for getting started with this repo.
-
-####Familiar with Git?#####
-Checkout this repo, install dependencies, then start the gulp process with the following:
-
-```
-	> git clone git@github.com:StephenGrider/ReduxSimpleStarter.git
-	> cd ReduxSimpleStarter
-	> npm install
-	> npm start
-```
-
-####Not Familiar with Git?#####
-Click [here](https://github.com/StephenGrider/ReactStarter/releases) then download the .zip file.  Extract the contents of the zip file, then open your terminal, change to the project directory, and:
-
-```
-	> npm install
-	> npm start
-```
+1. Run `npm install` (first time only)
+2. Run `npm start` (keep running)
+3. Run `webpack -w` (run in 2nd terminal window)
+4. In Chrome, go to `chrome://extensions/`
+	* Select `Developer mode` in the upper right corner
+	* Click `Load unpacked extension...`, select the project. An icon should appear in the Chrome toolbar (to the right of the Address Bar)
+	* Click the icon to view your dashboard
