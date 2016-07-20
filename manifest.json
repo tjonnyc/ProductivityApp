@@ -1,23 +1,23 @@
 {
-  "manifest_version": 2,
+	"manifest_version": 2,
 
-  "name": "Productivity App",
-  "description": "Helps you measure where you spend time on the internet",
-  "version": "1.0",
+	"name": "Productivity App",
+	"description": "Helps you measure where you spend time on the internet",
+	"version": "1.0",
 
-  "browser_action": {    
-    "default_popup_cc": "index.html"
-  },
-  "background": {
-    "scripts": ["background.js"]
-  },
-  "icons": { 
-    "16": "./src/images/icon16.png",
-    "48": "./src/images/icon48.png",
-    "128": "./src/images/icon128.png"
-  },
-  "permissions": [
-    "background",
-    "tabs"
-  ]
+	"browser_action": {    
+		"default_popup_cc": "index.html"
+	},
+	"background": {
+		"scripts": ["background.js"]
+	},
+	"icons": { 
+		"16": "./src/images/icon16.png",
+		"48": "./src/images/icon48.png",
+		"128": "./src/images/icon128.png"
+	},
+	"permissions": [
+		"background",
+		"tabs"
+	]
 }
