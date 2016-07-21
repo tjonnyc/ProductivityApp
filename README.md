@@ -9,9 +9,10 @@
 ##Installation (local build)
 
 1. Run `npm install` (first time only)
-2. Run `npm start` (keep running)
-3. Run `webpack -w` (run in 2nd terminal window)
-4. In Chrome, go to `chrome://extensions/`
+2. Run `webpack -w`
+3. In Chrome, go to `chrome://extensions/`
 	* Select `Developer mode` in the upper right corner
 	* Click `Load unpacked extension...`, select the project. An icon should appear in the Chrome toolbar (to the right of the Address Bar)
 	* Click the icon to view your dashboard
+
+To test without having to rebuild bundle.js use 'npm start'
