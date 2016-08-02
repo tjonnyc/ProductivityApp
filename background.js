@@ -12,7 +12,7 @@ function openBehaviorViewer(e)	{
 function recordTimeSegment(url) {
 	timeSegments.push({
 		url,
-		dateTime: new Date()
+		dateTime: Date.now()
 	});
 
 	console.log("Time Segments: ", timeSegments);
