@@ -1,5 +1,4 @@
-console.log("Background.js Started!");
-console.log("Chrome Object: ", chrome);
+console.log("Background.js Started");
 
 let timeSegments = [];
 
