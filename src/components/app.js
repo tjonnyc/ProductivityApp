@@ -9,42 +9,46 @@ export default class App extends Component {
 
 	render() {
 
-		function createChart(referencedChart)	{
-			
-			let timeSegments = [];
+		function createChart(referencedChart) {
+			//Retrieves Time Segments Object from Sync			
+			chrome.storage.sync.get("timeSegments",(items) => {				
+				let websites = consolidateTimeSegments(items["timeSegments"]);
+				console.log("Consolidated Websites: ", websites);
+				
+				drawChart(referencedChart, websites);
+			});
+		}		
 
-			//Retrieves Time Segments Object from Sync
-			//console.log("chrome.storage.sync: ", chrome.storage.sync);
-
-				chrome.storage.sync.get("timeSegments", (items) => {
-					console.log("Time segments array", items);
-				//timeSegments = items["timeSegments"];
-				})
-
+		function consolidateTimeSegments(timeSegments) {
 			console.log("Time Segments Object: ", timeSegments);
 
-
-			let websites = timeSegments.reduce(function(prev, curr, index, array) {
-				
+			return timeSegments.reduce(function(prev, curr, index, array) {				
 				let timeElapsed = 0;
-				index === 0 ? timeElapsed = 0 : timeElapsed = (curr.dateTime - prev.dateTime);
+				index === 0 ? timeElapsed = 0 : timeElapsed = (curr.dateTime - array[index-1].dateTime);
 
-				if(Object.keys(prev).indexOf(curr.url) === -1) {
-					return Object.assign(prev, {url: curr.url, timeElapsed});
+				let existingURLIndex = prev.findIndex((item) => {return item.url === curr.url});
+
+				if(existingURLIndex === -1) {
+					prev.push({url: curr.url, timeElapsed});
 				} else {
-					return Object.assign(prev, {url: curr.url, timeElapsed: prev[curr.url] + timeElapsed});
+					prev[existingURLIndex].timeElapsed += timeElapsed;
 				}
-			}, {});
+
+				return prev;
+			}, []);
+		}
+
+		function drawChart(referencedChart, websites)	{
 
 			console.log("Synthesized Array of Websites: ", websites);
 
 			var myChart = new Chart(referencedChart, {
 		    type: 'pie',
 		    data: {
-		        labels: ["Facebook", "Netflix", "Gmail", "Google Finance", "Tech Crunch", "Other"],
+		        labels: websites.map((item) => {return item.url}),
 		        datasets: [{
 		            label: 'Avg # of Minutes per Day',
-		            data: [35, 61, 10, 5, 5, 25],
+		            data: websites.map((item) => {return item.timeElapsed}),
 		            backgroundColor: [
 		                'rgba(255, 99, 132, 0.2)',
 		                'rgba(54, 162, 235, 0.2)',
