@@ -1,9 +1,13 @@
 // Takes a raw url and returns the full domain
 // (e.g. "https://mail.google.com/mail/u/0/#inbox" --> "mail.google.com")
 export default function parseUrl(url) {
-	console.log("url in parseUrl: ", url);
 	var fullSite;
+
+	// mainSite is the second-level domain (i.e. "https://mail.google.com/mail/u/0/#inbox" --> "mail.google.com")
+	// This is set up if needed for future use
 	var mainSite;
+
+	// domain is the top-level domain (i.e. "https://mail.google.com/mail/u/0/#inbox" --> ".com")
 	var domain;
 	var validUrl = false;
 	var domains = ['.com', '.edu'] //, '.org', '.net', '.gov', '.int', '.mil'];
