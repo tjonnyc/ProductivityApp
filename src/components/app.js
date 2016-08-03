@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import Chart from 'chart.js';
+import parseUrl from './parseUrl_helper';
 
 export default class App extends Component {
 
@@ -28,10 +29,10 @@ export default class App extends Component {
 			let timeElapsed = 0;
 			index === 0 ? timeElapsed = 0 : timeElapsed = (curr.dateTime - array[index-1].dateTime);
 
-			let existingURLIndex = prev.findIndex((item) => {return item.url === curr.url});
+			let existingURLIndex = prev.findIndex((item) => {return item.url === parseUrl(curr.url)});
 
 			if(existingURLIndex === -1) {
-				prev.push({url: curr.url, timeElapsed});
+				prev.push({url: parseUrl(curr.url), timeElapsed});
 			} else {
 				prev[existingURLIndex].timeElapsed += timeElapsed;
 			}
