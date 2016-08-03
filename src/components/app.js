@@ -13,13 +13,24 @@ export default class App extends Component {
 	}
 
 	createChart(referencedChart) {
-		//Retrieves Time Segments Object from Sync			
-		chrome.storage.sync.get("timeSegments",(items) => {
-			let websites = this.consolidateTimeSegments(items["timeSegments"]);
-			console.log("Consolidated Websites: ", websites);
-			
-			this.drawChart(referencedChart, websites);
-		});
+		//Retrieves Time Segments Object from AWS Server	
+	  
+	  let rawData = [];
+	  var xhttp = new XMLHttpRequest();
+
+	  xhttp.onreadystatechange = function() {
+	    if (xhttp.readyState == 4 && xhttp.status == 200) {
+				rawData = JSON.parse(xhttp.responseText);
+				console.log("Data from server: ", rawData);
+	    }
+	  };
+	  xhttp.open("GET", "/data", false);
+	  xhttp.send();
+				
+   	let websites = this.consolidateTimeSegments(rawData);
+		console.log("Consolidated Websites: ", websites);
+	
+		this.drawChart(referencedChart, websites);
 	}
 
 	consolidateTimeSegments(timeSegments) {
@@ -27,7 +38,7 @@ export default class App extends Component {
 
 		return timeSegments.reduce(function(prev, curr, index, array) {
 			let timeElapsed = 0;
-			index === 0 ? timeElapsed = 0 : timeElapsed = (curr.dateTime - array[index-1].dateTime);
+			index === 0 ? timeElapsed = 0 : timeElapsed = (curr.datetime - array[index-1].datetime);
 
 			let existingURLIndex = prev.findIndex((item) => {return item.url === parseUrl(curr.url)});
 
@@ -65,7 +76,7 @@ export default class App extends Component {
 			options: {
 			}
 		});
-	}
+	}		
 
 	render() {
 		return (

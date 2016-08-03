@@ -20,7 +20,7 @@ function recordTimeSegment(url) {
 	//Setup a mysql database connection 
 	//Run a sql query looping through the timeSegments object and storing the url and datetime
 
-	chrome.storage.sync.set({timeSegments});
+	//chrome.storage.sync.set({timeSegments});
 }
 
 //Function called by onUpdated event (from chrome) - passes in the three arguments
