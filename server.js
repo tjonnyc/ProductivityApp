@@ -14,8 +14,6 @@ app.use(express.static('public'));
 
 //pull all time segment data from the server and pass back as a JSON object called response with an array element called timeSegments
 app.get('/data', function(req, res) {
-	var response = { timeSegments: [] };
-
 	connection.connect();
 
 	connection.query('SELECT * FROM time_segments', function(err, rows, fields) {
