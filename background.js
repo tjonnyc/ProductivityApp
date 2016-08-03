@@ -18,10 +18,6 @@ function recordTimeSegment(url) {
 	console.log("Time Segments: ", timeSegments);
 
 	chrome.storage.sync.set({timeSegments});
-
-	/*chrome.storage.sync.get("timeSegments", (items) => {
-		console.log(items);
-	});*/
 }
 
 //Function called by onUpdated event (from chrome) - passes in the three arguments
