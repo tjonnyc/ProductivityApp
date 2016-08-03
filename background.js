@@ -25,7 +25,6 @@ function tabUpdated(tabID, changeInfo, tab) {
 	recordTimeSegment(tab.url);
 }
 
-
 //Function called by onActivated event (from chrome) - passes in the argument
 function activeTabChanged(activeInfo) {
 	chrome.tabs.query({ active: true}, (tabs) => recordTimeSegment(tabs[0].url))
