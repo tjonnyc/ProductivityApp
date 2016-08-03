@@ -10,7 +10,7 @@ export default function parseUrl(url) {
 	// domain is the top-level domain (i.e. "https://mail.google.com/mail/u/0/#inbox" --> ".com")
 	var domain;
 	var validUrl = false;
-	var domains = ['.com', '.edu'] //, '.org', '.net', '.gov', '.int', '.mil'];
+	var domains = ['.com', '.edu', '.org', '.net', '.gov', '.int', '.mil'];
 
 	//Remove data after top-level domain
 	for(let i = 0; i < domains.length; i++) {
@@ -39,7 +39,7 @@ export default function parseUrl(url) {
 	}
 
 	//If contains 2 periods, find mainSite
-	if(fullSite.indexOf('.',-1) !== fullSite.lastIndexOf('.')) {
+	if(fullSite.indexOf('.') !== fullSite.lastIndexOf('.')) {
 		let reverseFullSite = fullSite.split('').reverse().join('');
 		let startIndex = fullSite.length - reverseFullSite.indexOf('.', domain.length);
 		mainSite = fullSite.slice(startIndex);
