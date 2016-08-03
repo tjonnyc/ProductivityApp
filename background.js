@@ -17,6 +17,9 @@ function recordTimeSegment(url) {
 
 	console.log("Time Segments: ", timeSegments);
 
+	//Setup a mysql database connection 
+	//Run a sql query looping through the timeSegments object and storing the url and datetime
+
 	chrome.storage.sync.set({timeSegments});
 }
 
