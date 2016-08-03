@@ -5,7 +5,7 @@ let timeSegments = [];
 //Opens a new tab and shows index.html
 function openBehaviorViewer(e)	{
 	chrome.tabs.create({
-		url: "./index.html"
+		url: "http://localhost:8080/index.html"
 	});
 }
 
