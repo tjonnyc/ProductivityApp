@@ -10,11 +10,12 @@ var connection = mysql.createConnection({
   database : 'productivityappdb'
 });
 
+connection.connect();
+
 app.use(express.static('public'));
 
 //pull all time segment data from the server and pass back as a JSON object called response with an array element called timeSegments
 app.get('/data', function(req, res) {
-	connection.connect();
 
 	connection.query('SELECT * FROM time_segments', function(err, rows, fields) {
 	  if (err) throw err;	  
@@ -22,7 +23,17 @@ app.get('/data', function(req, res) {
 	  res.send(rows);
 	});
 
-	connection.end();	
+});
+
+//inserts a new timesegment into the database based on the url and datetime passed in the request
+app.get('/addTimeSegment', function(req, res) {
+	
+	console.log(req.query.datetime);
+	
+	connection.query("INSERT INTO time_segments (url, datetime) VALUES ('" + req.query.url + "', '" + req.query.datetime + "');", function(err) {
+	  if (err) throw err;	 
+	});
+
 });
 
 app.listen(3000, function () {
