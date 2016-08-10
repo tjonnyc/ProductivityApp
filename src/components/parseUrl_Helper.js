@@ -28,9 +28,8 @@ export default function parseUrl(url) {
 		return 'Unknown';
 	}
 
-	/* -- there is a bug here where www.google.com is tripping this clause
 	//Remove 'http' or 'https' if there
-	if(fullSite.indexOf('://' !== -1)) {
+	if(fullSite.indexOf('://') !== -1) {
 		fullSite = fullSite.split('://')[1];
 	}
 	*/

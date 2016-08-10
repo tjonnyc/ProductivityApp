@@ -8,14 +8,13 @@ function openBehaviorViewer(e)	{
 }
 
 function recordTimeSegment(url) {
-
 	var currentTime = Date.now() - 1470393262896;
 	console.log(currentTime);
 	//Hit server with a get request and pass the url and datetime to add to the db
 	var xhttp = new XMLHttpRequest();  
   xhttp.open("GET", "http://localhost:3000/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
   xhttp.send();
-  console.log("Recorded URL: ", url, ", DATETIME: ", currentTime); 	
+  console.log("Recorded URL: ", url, ", DATETIME: ", currentTime); 	  
 }
 
 //Function called by onUpdated event (from chrome) - passes in the three arguments
