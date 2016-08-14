@@ -1,37 +1,37 @@
 import React, { Component } from 'react';
 import Chart from 'chart.js';
 import parseUrl from './parseUrl_helper';
+import Website_Table from './website_table.js';
 
 export default class App extends Component {
 
 	constructor(props) {
 		super(props);
 
-		this.createChart = this.createChart.bind(this);
-		this.consolidateTimeSegments = this.consolidateTimeSegments.bind(this);
-		this.drawChart = this.drawChart.bind(this);
+		this.state = {
+			websites: []
+		}
+
+		this.pullData();
 	}
 
-	createChart(referencedChart) {
-		//Retrieves Time Segments Object from AWS Server	
-	  
-	  let rawData = [];
-	  var xhttp = new XMLHttpRequest();
+	//Pulls the users data from the AWS Server and loads the websites array in state
+	pullData() {
+		let rawData = [];
+	  let consolidateTimeSegments = this.consolidateTimeSegments.bind(this);
+	  let setState = this.setState.bind(this);
 
+	  var xhttp = new XMLHttpRequest();
 	  xhttp.onreadystatechange = function() {
 	    if (xhttp.readyState == 4 && xhttp.status == 200) {
 				rawData = JSON.parse(xhttp.responseText);
-				console.log("Data from server: ", rawData);
+	  		let websites = consolidateTimeSegments(rawData);
+				setState({websites});	
 	    }
 	  };
-	  xhttp.open("GET", "/data", false);
+	  xhttp.open("GET", "/data", true);
 	  xhttp.send();
-				
-   	let websites = this.consolidateTimeSegments(rawData);
-		console.log("Consolidated Websites: ", websites);
-	
-		this.drawChart(referencedChart, websites);
-	}
+	}	
 
 	consolidateTimeSegments(timeSegments) {
 		console.log("Time Segments Object: ", timeSegments);
@@ -52,35 +52,41 @@ export default class App extends Component {
 		}, []);
 	}
 
-	drawChart(referencedChart, websites) {
+	drawChart(referencedChart) {
 
-		console.log("Synthesized Array of Websites: ", websites);
-
-		var myChart = new Chart(referencedChart, {
-			type: 'pie',
-			data: {
-				labels: websites.map((item) => {return item.url}),
-				datasets: [{
-					label: 'Avg # of Minutes per Day',
-					data: websites.map((item) => {return item.timeElapsed}),
-					backgroundColor: [
-						'rgba(255, 99, 132, 0.2)',
-						'rgba(54, 162, 235, 0.2)',
-						'rgba(255, 206, 86, 0.2)',
-						'rgba(75, 192, 192, 0.2)',
-						'rgba(153, 102, 255, 0.2)',
-						'rgba(255, 159, 64, 0.2)'
-					]
-				}]
-			},
-			options: {
-			}
-		});
+		console.log("Synthesized Array of Websites: ", this.state.websites);
+				
+		if (this.state.websites.length && referencedChart)
+		{					
+			var myChart = new Chart(referencedChart, {
+				type: 'pie',
+				data: {
+					labels: this.state.websites.slice(0,6).map((item) => {return item.url}),
+					datasets: [{
+						label: 'Avg # of Minutes per Day',
+						data: this.state.websites.slice(0,6).map((item) => {return item.timeElapsed}),
+						backgroundColor: [
+							'rgba(255, 99, 132, 0.2)',
+							'rgba(54, 162, 235, 0.2)',
+							'rgba(255, 206, 86, 0.2)',
+							'rgba(75, 192, 192, 0.2)',
+							'rgba(153, 102, 255, 0.2)',
+							'rgba(255, 159, 64, 0.2)'
+						]
+					}]
+				},
+				options: {
+				}
+			});
+		}
 	}		
 
 	render() {
 		return (
-			<canvas id="myChart" width="400" height="400" ref={this.createChart} />
+			<div>
+				<canvas id="myChart" width="400" height="400" ref={this.drawChart.bind(this)} />
+				<Website_Table websites={this.state.websites} />
+			</div>
 		);
 	}
 }

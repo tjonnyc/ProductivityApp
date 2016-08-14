@@ -32,7 +32,7 @@ export default function parseUrl(url) {
 	if(fullSite.indexOf('://') !== -1) {
 		fullSite = fullSite.split('://')[1];
 	}
-	*/
+	
 	
 	//Remove 'www.' if there
 	if(fullSite.slice(0,4) === "www." || fullSite.slice(0,4) === "WWW.") {
