@@ -37,17 +37,21 @@ export default class App extends Component {
 		console.log("Time Segments Object: ", timeSegments);
 
 		return timeSegments.reduce(function(prev, curr, index, array) {
-			let timeElapsed = 0;
-			index === 0 ? timeElapsed = 0 : timeElapsed = (curr.datetime - array[index-1].datetime);
+			if (curr.url !== "IDLE") {
+				let timeElapsed = 0;
+				if (index !== 0 && index !== array.length-1) {
+					timeElapsed = (array[index+1].datetime - curr.datetime);
+				}
 
-			let existingURLIndex = prev.findIndex((item) => {return item.url === parseUrl(curr.url)});
+				let existingURLIndex = prev.findIndex((item) => {return item.url === parseUrl(curr.url)});
 
-			if(existingURLIndex === -1) {
-				prev.push({url: parseUrl(curr.url), timeElapsed});
-			} else {
-				prev[existingURLIndex].timeElapsed += timeElapsed;
+				if(existingURLIndex === -1) {
+					prev.push({url: parseUrl(curr.url), timeElapsed});
+				} else {
+					prev[existingURLIndex].timeElapsed += timeElapsed;
+				}
 			}
-
+			
 			return prev;
 		}, []);
 	}
