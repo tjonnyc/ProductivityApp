@@ -1,4 +1,5 @@
 console.log("Background.js Started");
+var currentURL = "";
 
 //Opens a new tab and shows index.html
 function openBehaviorViewer(e)	{
@@ -34,12 +35,16 @@ function tabRemoved(tabId, removeInfo) {
 
 //Sends ajax request to the server to add a timesegment to the database
 function recordTimeSegment(url) {
-	var currentTime = Date.now() - 1470393262896;
-	//Hit server with a get request and pass the url and datetime to add to the db
-	var xhttp = new XMLHttpRequest();  
-  xhttp.open("GET", "http://localhost:3000/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
-  xhttp.send();
-  console.log("Recorded URL: ", url, ", DATETIME: ", currentTime); 	  
+	if (url !== currentTime)
+	{
+		var currentTime = Date.now() - 1470393262896;
+		//Hit server with a get request and pass the url and datetime to add to the db
+		var xhttp = new XMLHttpRequest();  
+	  xhttp.open("GET", "http://localhost:3000/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
+	  xhttp.send();
+	  console.log("Recorded URL: ", url, ", DATETIME: ", currentTime); 	  
+	  currentURL = url;
+	}
 }
 
 //Add our event listeners
