@@ -17,7 +17,7 @@ app.use(express.static('public'));
 //pull all time segment data from the server and pass back as a JSON object called response with an array element called timeSegments
 app.get('/data', function(req, res) {
 
-	connection.query('SELECT * FROM time_segments', function(err, rows, fields) {
+	connection.query('SELECT url, datetime, category FROM time_segments JOIN categories ON time_segments.url = categories.url', function(err, rows, fields) {
 	  if (err) throw err;	  
 	  console.log('Data pulled from server: ', rows);
 	  res.send(rows);
@@ -32,6 +32,10 @@ app.get('/addTimeSegment', function(req, res) {
 	
 	connection.query("INSERT INTO time_segments (url, datetime) VALUES ('" + req.query.url + "', '" + req.query.datetime + "');", function(err) {
 	  if (err) throw err;	 
+	});
+
+	connection.query("INSERT INTO categories (url, category) VALUES ('" + req.query.url + "', 'Click to Categorize');", function(err) {
+	  if (err) console.log(err);	 
 	});
 
 });

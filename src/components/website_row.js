@@ -7,7 +7,7 @@ export default class Website_Row extends Component {
 			<tr>
 	      <td>{this.props.website.url}</td>
 	      <td>{this.props.website.timeElapsed}</td>
-	      <td>To Be Filled In</td>
+	      <td>{this.props.website.category}</td>
 	    </tr>
 		);
 	}

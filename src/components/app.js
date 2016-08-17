@@ -43,10 +43,10 @@ export default class App extends Component {
 					timeElapsed = (array[index+1].datetime - curr.datetime);
 				}
 
-				let existingURLIndex = prev.findIndex((item) => {return item.url === parseUrl(curr.url)});
+				let existingURLIndex = prev.findIndex((item) => {return item.url === curr.url});
 
 				if(existingURLIndex === -1) {
-					prev.push({url: parseUrl(curr.url), timeElapsed});
+					prev.push({url: curr.url, timeElapsed, category: curr.category});
 				} else {
 					prev[existingURLIndex].timeElapsed += timeElapsed;
 				}
