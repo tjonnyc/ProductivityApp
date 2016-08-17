@@ -1,6 +1,9 @@
 // Takes a raw url and returns the full domain
 // (e.g. "https://mail.google.com/mail/u/0/#inbox" --> "mail.google.com")
 export default function parseUrl(url) {
+	//In the special case that a url is an IDLE entry we don't want to parse it
+	if (url === "IDLE") {return url;}
+
 	var fullSite;
 
 	// mainSite is the second-level domain (i.e. "https://mail.google.com/mail/u/0/#inbox" --> "mail.google.com")

@@ -9,7 +9,10 @@ export default class App extends Component {
 		super(props);
 
 		this.state = {
-			websites: []
+			websites: [],
+			view: "url",
+			categories: [],
+			activeNav: {urlView: "active", categoryView: ""}
 		}
 
 		this.pullData();
@@ -19,6 +22,7 @@ export default class App extends Component {
 	pullData() {
 		let rawData = [];
 	  let consolidateTimeSegments = this.consolidateTimeSegments.bind(this);
+	  let consolidateCategories = this.consolidateCategories.bind(this);
 	  let setState = this.setState.bind(this);
 
 	  var xhttp = new XMLHttpRequest();
@@ -26,12 +30,28 @@ export default class App extends Component {
 	    if (xhttp.readyState == 4 && xhttp.status == 200) {
 				rawData = JSON.parse(xhttp.responseText);
 	  		let websites = consolidateTimeSegments(rawData);
-				setState({websites});	
+				let categories = consolidateCategories(websites);
+				setState({websites, categories});				
 	    }
 	  };
 	  xhttp.open("GET", "/data", true);
 	  xhttp.send();
 	}	
+
+	consolidateCategories(websites) {
+		return	websites.reduce(function(prev, curr, index, array) {
+			let existingCategoryIndex = prev.findIndex((item) => {return item.category === curr.category});
+
+			if(existingCategoryIndex === -1) {
+				prev.push({url: curr.category, timeElapsed: curr.timeElapsed, category: curr.category});
+			} else {
+				prev[existingCategoryIndex].timeElapsed += curr.timeElapsed;
+			}
+
+			return prev;
+
+		}, []);
+	}
 
 	consolidateTimeSegments(timeSegments) {
 		console.log("Time Segments Object: ", timeSegments);
@@ -58,17 +78,25 @@ export default class App extends Component {
 
 	drawChart(referencedChart) {
 
-		console.log("Synthesized Array of Websites: ", this.state.websites);
+		let presentation = [];
+
+		if (this.state.view === "url") {
+			presentation = this.state.websites;
+		} else if (this.state.view === "category") {
+			presentation = this.state.categories;
+		}
+
+		console.log("Synthesized Array of Websites: ", presentation);
 				
-		if (this.state.websites.length && referencedChart)
+		if (presentation.length && referencedChart)
 		{					
 			var myChart = new Chart(referencedChart, {
 				type: 'pie',
 				data: {
-					labels: this.state.websites.slice(0,6).map((item) => {return item.url}),
+					labels: presentation.slice(0,6).map((item) => {return item.url}),
 					datasets: [{
 						label: 'Avg # of Minutes per Day',
-						data: this.state.websites.slice(0,6).map((item) => {return item.timeElapsed}),
+						data: presentation.slice(0,6).map((item) => {return item.timeElapsed}),
 						backgroundColor: [
 							'rgba(255, 99, 132, 0.2)',
 							'rgba(54, 162, 235, 0.2)',
@@ -85,9 +113,28 @@ export default class App extends Component {
 		}
 	}		
 
+	changeView(event) {
+		if (event.target.text === "URL View") {
+			this.setState({view: "url", activeNav: {urlView: "active", categoryView: ""}});
+		} else if (event.target.text === "Category View") {
+			this.setState({view: "category", activeNav: {urlView: "", categoryView: "active"}});
+		}
+	}
+
 	render() {
 		return (
 			<div>
+				<nav className="navbar navbar-default">
+				  <div className="container">
+				    <div className="navbar-header">
+				    	<a href="#" className="navbar-brand">Productivity App</a>
+				    </div>
+				    <ul className="nav navbar-nav">
+				    	<li className={this.state.activeNav.urlView}><a href="#" onClick={this.changeView.bind(this)}>URL View</a></li>
+				    	<li className={this.state.activeNav.categoryView}><a href="#" onClick={this.changeView.bind(this)}>Category View</a></li>
+				    </ul>
+				  </div>
+				</nav>
 				<canvas id="myChart" width="400" height="400" ref={this.drawChart.bind(this)} />
 				<Website_Table websites={this.state.websites} />
 			</div>

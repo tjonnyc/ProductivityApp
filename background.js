@@ -52,7 +52,6 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	//test
 	console.log("Background.js Started");
 	var currentURL = "";
 
@@ -83,7 +82,6 @@
 			});
 		} else {
 			//only other options are idle or locked
-			console.log("Idle from idle");
 			recordTimeSegment("IDLE");
 		}
 	}
@@ -100,10 +98,15 @@
 	//Sends ajax request to the server to add a timesegment to the database
 	function recordTimeSegment(url) {
 		url = (0, _parseUrl_helper2.default)(url);
-		if (url !== currentTime) {
+		if (url !== currentURL) {
 			var currentTime = Date.now() - 1471344028132;
 			//Hit server with a get request and pass the url and datetime to add to the db
 			var xhttp = new XMLHttpRequest();
+			xhttp.onreadystatechange = function () {
+				if (xhttp.readyState == 4 && xhttp.status == 200) {
+					console.log("Database Updated");
+				}
+			};
 			xhttp.open("GET", "http://localhost:3000/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
 			xhttp.send();
 			console.log("Recorded URL: ", url, ", DATETIME: ", currentTime);
@@ -131,6 +134,11 @@
 	// Takes a raw url and returns the full domain
 	// (e.g. "https://mail.google.com/mail/u/0/#inbox" --> "mail.google.com")
 	function parseUrl(url) {
+		//In the special case that a url is an IDLE entry we don't want to parse it
+		if (url === "IDLE") {
+			return url;
+		}
+
 		var fullSite;
 
 		// mainSite is the second-level domain (i.e. "https://mail.google.com/mail/u/0/#inbox" --> "mail.google.com")
