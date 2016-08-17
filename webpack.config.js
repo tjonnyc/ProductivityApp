@@ -1,11 +1,11 @@
 module.exports = {
-	entry: [
-		'./src/index.js'
-	],
+	entry: {
+		'./public/bundle': './src/index',
+		'./background': './src/chrome/background_src'
+	},
 	output: {
-		path: __dirname + '/public',
-		publicPath: '/public',
-		filename: 'bundle.js'
+		path: './',
+		filename: '[name].js'
 	},
 	module: {
 		loaders: [{

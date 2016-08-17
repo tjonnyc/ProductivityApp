@@ -19,6 +19,7 @@
 	"permissions": [
 		"background",
 		"tabs",
-		"storage"
+		"storage",
+		"idle"
 	]
 }
