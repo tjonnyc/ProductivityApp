@@ -1,7 +1,7 @@
 module.exports = {
 	entry: {
 		'./public/bundle': './src/index',
-		'./background': './src/background/background'
+		'./background': './src/chrome/background_src'
 	},
 	output: {
 		path: './',

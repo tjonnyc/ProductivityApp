@@ -52,6 +52,7 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
+	//test
 	console.log("Background.js Started");
 	var currentURL = "";
 
