@@ -147,7 +147,7 @@
 
 		// domain is the top-level domain (i.e. "https://mail.google.com/mail/u/0/#inbox" --> ".com")
 		var domain;
-		var validUrl = false;
+		var valid = false;
 		var domains = ['.com', '.edu', '.org', '.net', '.gov', '.int', '.mil'];
 
 		//Remove data after top-level domain
@@ -155,15 +155,14 @@
 			var index = url.indexOf(domains[i]);
 			if (index !== -1) {
 				domain = domains[i];
-				fullSite = url.slice(0, index) + domain;
-				validUrl = true;
+				valid = true;
+				fullSite = url.slice(0, index);
 				break;
 			}
 		}
 
-		//If url didn't have a recognized top-leve domain, returns unknown
-		if (!validUrl) {
-			return 'Unknown';
+		if (!valid) {
+			return url;
 		}
 
 		//Remove 'http' or 'https' if there
@@ -176,11 +175,9 @@
 			fullSite = fullSite.slice(4);
 		}
 
-		//If contains 2 periods, find mainSite
-		if (fullSite.indexOf('.') !== fullSite.lastIndexOf('.')) {
-			var reverseFullSite = fullSite.split('').reverse().join('');
-			var startIndex = fullSite.length - reverseFullSite.indexOf('.', domain.length);
-			mainSite = fullSite.slice(startIndex);
+		//If fullsite contains periods, find mainSite
+		if (fullSite.indexOf('.') !== -1) {
+			mainSite = fullSite.slice(fullSite.indexOf('.'));
 		} else {
 			mainSite = fullSite;
 		}
