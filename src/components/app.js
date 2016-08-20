@@ -81,9 +81,9 @@ export default class App extends Component {
 		let presentation = [];
 
 		if (this.state.view === "url") {
-			presentation = this.state.websites;
+			presentation = this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;}).slice(0,8);
 		} else if (this.state.view === "category") {
-			presentation = this.state.categories;
+			presentation = this.state.categories.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;}).slice(0,8);
 		}
 
 		console.log("Synthesized Array of Websites: ", presentation);
@@ -93,17 +93,19 @@ export default class App extends Component {
 			var myChart = new Chart(referencedChart, {
 				type: 'pie',
 				data: {
-					labels: presentation.slice(0,6).map((item) => {return item.url}),
+					labels: presentation.map((item) => {return item.url}),
 					datasets: [{
 						label: 'Avg # of Minutes per Day',
-						data: presentation.slice(0,6).map((item) => {return item.timeElapsed}),
+						data: presentation.map((item) => {return item.timeElapsed}),
 						backgroundColor: [
-							'rgba(255, 99, 132, 0.2)',
-							'rgba(54, 162, 235, 0.2)',
-							'rgba(255, 206, 86, 0.2)',
-							'rgba(75, 192, 192, 0.2)',
-							'rgba(153, 102, 255, 0.2)',
-							'rgba(255, 159, 64, 0.2)'
+							'rgba(114, 147, 203, 1)',
+							'rgba(225, 151, 76, 1)',
+							'rgba(132, 186, 91, 1)',
+							'rgba(211, 94, 96, 1)',
+							'rgba(128, 133, 133, 1)',
+							'rgba(144, 103, 167, 1)',							
+							'rgba(171, 104, 87, 1)',
+							'rgba(204, 194, 16, 1)'
 						]
 					}]
 				},
@@ -136,7 +138,7 @@ export default class App extends Component {
 				  </div>
 				</nav>
 				<canvas id="myChart" width="400" height="400" ref={this.drawChart.bind(this)} />
-				<Website_Table websites={this.state.websites} />
+				<Website_Table websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
 			</div>
 		);
 	}
