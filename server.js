@@ -37,7 +37,7 @@ app.get('/addTimeSegment', function(req, res) {
 	  if (err) {console.log(err.code);}	 
 	});	
 
-	//res.status(200).end();
+	res.status(200).end();
 });
 
 //updaets the category of the url based on the drop down selection
