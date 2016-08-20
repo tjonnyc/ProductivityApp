@@ -2,6 +2,7 @@
 bundle.js
 npm-debug.log
 /public/bundle.js
+background.js
 
 # IntelliJ
 *.iml
