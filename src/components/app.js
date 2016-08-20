@@ -12,7 +12,7 @@ export default class App extends Component {
 			websites: [],
 			view: "url",
 			categories: [],
-			activeNav: {urlView: "active", categoryView: ""}
+			activeNav: {urlView: "active", categoryView: ""},
 		}
 
 		this.pullData();
@@ -78,6 +78,8 @@ export default class App extends Component {
 
 	drawChart(referencedChart) {
 
+		//need to use myChart.destory() -- probably need to store myChart in state
+
 		let presentation = [];
 
 		if (this.state.view === "url") {
@@ -137,8 +139,14 @@ export default class App extends Component {
 				    </ul>
 				  </div>
 				</nav>
-				<canvas id="myChart" width="400" height="400" ref={this.drawChart.bind(this)} />
-				<Website_Table websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+				<div className="container-fluid">
+					<div className="row">
+						<div className="col-sm-6 col-md-6 col-lg-6">
+							<canvas id="myChart" width="400" height="400" ref={this.drawChart.bind(this)} />
+						</div>
+						<Website_Table id="displayedTable" websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+					</div>
+				</div>
 			</div>
 		);
 	}

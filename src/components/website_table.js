@@ -13,7 +13,7 @@ export default class Website_Table extends Component {
 		});
 
 		return (
-			<section id="tableView">
+			<section id="tableView" className="col-sm-6 col-md-6 col-lg-6">
 					<table className="table table-striped">
 					    <thead>
 						    <tr>
