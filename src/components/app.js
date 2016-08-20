@@ -119,7 +119,7 @@ export default class App extends Component {
 	render() {
 		var chart;
 		if (this.state.websites.length) {
-			chart = <Doughnut id="myChart" data={this.generateChartData()} width="400px" height="400px" />;
+			chart = <Doughnut id="myChart" data={this.generateChartData()} width="400px"/>;
 		} else {
 			chart = "Loading...";
 		}
