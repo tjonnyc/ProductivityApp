@@ -58,7 +58,7 @@
 	//Opens a new tab and shows index.html
 	function openBehaviorViewer(e) {
 		chrome.tabs.create({
-			url: "http://localhost:3000/index.html"
+			url: "http://productivityapp-dev.us-west-2.elasticbeanstalk.com/index.html"
 		});
 	}
 
@@ -107,7 +107,7 @@
 					console.log("Database Updated");
 				}
 			};
-			xhttp.open("GET", "http://localhost:3000/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
+			xhttp.open("GET", "http://productivityapp-dev.us-west-2.elasticbeanstalk.com/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
 			xhttp.send();
 			console.log("Recorded URL: ", url, ", DATETIME: ", currentTime);
 			currentURL = url;
