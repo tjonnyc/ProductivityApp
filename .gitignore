@@ -6,4 +6,8 @@ background.js
 
 # IntelliJ
 *.iml
-/.idea
+/.idea
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

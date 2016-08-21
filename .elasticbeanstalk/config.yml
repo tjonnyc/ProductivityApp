@@ -1,0 +1,11 @@
+branch-defaults:
+  feat12:
+    environment: ProductivityApp-dev
+    group_suffix: null
+global:
+  application_name: ProductivityApp
+  default_ec2_keyname: null
+  default_platform: Node.js
+  default_region: us-west-2
+  profile: eb-cli
+  sc: git
