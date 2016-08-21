@@ -21652,7 +21652,7 @@
 			value: function render() {
 				var chart;
 				if (this.state.websites.length) {
-					chart = _react2.default.createElement(_reactChartjs.Doughnut, { id: 'myChart', data: this.generateChartData(), width: 400 });
+					chart = _react2.default.createElement(_reactChartjs.Doughnut, { id: 'myChart', data: this.generateChartData() });
 				} else {
 					chart = "Loading...";
 				}
