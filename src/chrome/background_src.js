@@ -6,7 +6,7 @@ var currentURL = "";
 //Opens a new tab and shows index.html
 function openBehaviorViewer(e)	{
 	chrome.tabs.create({
-		url: "http://localhost:3000/index.html"
+		url: "http://productivityapp-dev.us-west-2.elasticbeanstalk.com/index.html"
 	});
 }
 
@@ -25,7 +25,6 @@ function idleStateChanged(newState) {
 	if (newState === "active") {
 		chrome.tabs.query({ active: true}, (tabs) => recordTimeSegment(tabs[0].url))	
 	} else { //only other options are idle or locked
-		console.log("Idle from idle");
 		recordTimeSegment("IDLE");
 	}
 }
@@ -38,12 +37,17 @@ function tabRemoved(tabId, removeInfo) {
 //Sends ajax request to the server to add a timesegment to the database
 function recordTimeSegment(url) {
 	url = parseUrl(url);
-	if (url !== currentTime)
+	if (url !== currentURL)
 	{
 		var currentTime = Date.now() - 1471344028132;
 		//Hit server with a get request and pass the url and datetime to add to the db
-		var xhttp = new XMLHttpRequest();  
-	  xhttp.open("GET", "http://localhost:3000/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
+		var xhttp = new XMLHttpRequest(); 
+		xhttp.onreadystatechange = function() {
+	    if (xhttp.readyState == 4 && xhttp.status == 200) {
+				console.log("Database Updated");
+	    }
+	  }; 
+	  xhttp.open("GET", "http://productivityapp-dev.us-west-2.elasticbeanstalk.com/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
 	  xhttp.send();
 	  console.log("Recorded URL: ", url, ", DATETIME: ", currentTime); 	  
 	  currentURL = url;

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Chart from 'chart.js';
 import parseUrl from './parseUrl_helper';
 import Website_Table from './website_table.js';
+import {Doughnut} from 'react-chartjs-2';
 
 export default class App extends Component {
 
@@ -9,7 +10,10 @@ export default class App extends Component {
 		super(props);
 
 		this.state = {
-			websites: []
+			websites: [],
+			view: "url",
+			categories: [],
+			activeNav: {urlView: "active", categoryView: ""},
 		}
 
 		this.pullData();
@@ -19,6 +23,7 @@ export default class App extends Component {
 	pullData() {
 		let rawData = [];
 	  let consolidateTimeSegments = this.consolidateTimeSegments.bind(this);
+	  let consolidateCategories = this.consolidateCategories.bind(this);
 	  let setState = this.setState.bind(this);
 
 	  var xhttp = new XMLHttpRequest();
@@ -26,16 +31,31 @@ export default class App extends Component {
 	    if (xhttp.readyState == 4 && xhttp.status == 200) {
 				rawData = JSON.parse(xhttp.responseText);
 	  		let websites = consolidateTimeSegments(rawData);
-				setState({websites});	
+				let categories = consolidateCategories(websites);
+				setState({websites, categories});				
 	    }
 	  };
 	  xhttp.open("GET", "/data", true);
 	  xhttp.send();
 	}	
 
-	consolidateTimeSegments(timeSegments) {
-		console.log("Time Segments Object: ", timeSegments);
+	consolidateCategories(websites) {
+		return	websites.reduce(function(prev, curr, index, array) {
+			let existingCategoryIndex = prev.findIndex((item) => {return item.category === curr.category});
 
+			if(existingCategoryIndex === -1) {
+				prev.push({url: curr.category, timeElapsed: curr.timeElapsed, category: curr.category});
+			} else {
+				prev[existingCategoryIndex].timeElapsed += curr.timeElapsed;
+			}
+
+			return prev;
+
+		}, []);
+	}
+
+	consolidateTimeSegments(timeSegments) {
+		
 		return timeSegments.reduce(function(prev, curr, index, array) {
 			if (curr.url !== "IDLE") {
 				let timeElapsed = 0;
@@ -56,40 +76,75 @@ export default class App extends Component {
 		}, []);
 	}
 
-	drawChart(referencedChart) {
+	generateChartData() {		
 
-		console.log("Synthesized Array of Websites: ", this.state.websites);
+		let presentation = [];
+
+		if (this.state.view === "url") {
+			presentation = this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;}).slice(0,8);
+		} else if (this.state.view === "category") {
+			presentation = this.state.categories.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;}).slice(0,8);
+		}
 				
-		if (this.state.websites.length && referencedChart)
-		{					
-			var myChart = new Chart(referencedChart, {
-				type: 'pie',
-				data: {
-					labels: this.state.websites.slice(0,6).map((item) => {return item.url}),
-					datasets: [{
-						label: 'Avg # of Minutes per Day',
-						data: this.state.websites.slice(0,6).map((item) => {return item.timeElapsed}),
-						backgroundColor: [
-							'rgba(255, 99, 132, 0.2)',
-							'rgba(54, 162, 235, 0.2)',
-							'rgba(255, 206, 86, 0.2)',
-							'rgba(75, 192, 192, 0.2)',
-							'rgba(153, 102, 255, 0.2)',
-							'rgba(255, 159, 64, 0.2)'
-						]
-					}]
-				},
-				options: {
-				}
-			});
+		if (presentation.length)
+		{			
+			return {
+				labels: presentation.map((item) => {return item.url}),
+				datasets: [{
+					label: 'Avg # of Minutes per Day',
+					data: presentation.map((item) => {return item.timeElapsed}),
+					backgroundColor: [
+						'rgba(114, 147, 203, 1)',
+						'rgba(225, 151, 76, 1)',
+						'rgba(132, 186, 91, 1)',
+						'rgba(211, 94, 96, 1)',
+						'rgba(128, 133, 133, 1)',
+						'rgba(144, 103, 167, 1)',							
+						'rgba(171, 104, 87, 1)',
+						'rgba(204, 194, 16, 1)'
+					]
+				}]
+			}
 		}
 	}		
 
+	changeView(event) {
+		if (event.target.text === "URL View") {
+			this.setState({view: "url", activeNav: {urlView: "active", categoryView: ""}});
+		} else if (event.target.text === "Category View") {
+			this.setState({view: "category", activeNav: {urlView: "", categoryView: "active"}});
+		}
+	}
+
 	render() {
+		var chart;
+		if (this.state.websites.length) {
+			chart = <Doughnut id="myChart" data={this.generateChartData()} height={400}/>;
+		} else {
+			chart = "Loading...";
+		}
+
 		return (
 			<div>
-				<canvas id="myChart" width="400" height="400" ref={this.drawChart.bind(this)} />
-				<Website_Table websites={this.state.websites} />
+				<nav className="navbar navbar-default">
+				  <div className="container">
+				    <div className="navbar-header">
+				    	<a href="#" className="navbar-brand">Productivity App</a>
+				    </div>
+				    <ul className="nav navbar-nav">
+				    	<li className={this.state.activeNav.urlView}><a href="#" onClick={this.changeView.bind(this)}>URL View</a></li>
+				    	<li className={this.state.activeNav.categoryView}><a href="#" onClick={this.changeView.bind(this)}>Category View</a></li>
+				    </ul>
+				  </div>
+				</nav>
+				<div className="container-fluid">
+					<div className="row">						
+						<div className="col-sm-6 col-md-6 col-lg-6">
+							{chart}
+						</div>
+						<Website_Table id="displayedTable" websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+					</div>
+				</div>
 			</div>
 		);
 	}

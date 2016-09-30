@@ -22,7 +22,6 @@ app.get('/data', function(req, res) {
 	  console.log('Data pulled from server: ', rows);
 	  res.send(rows);
 	});
-
 });
 
 //inserts a new timesegment into the database based on the url and datetime passed in the request
@@ -33,15 +32,23 @@ app.get('/addTimeSegment', function(req, res) {
 	connection.query("INSERT INTO time_segments (url, datetime) VALUES ('" + req.query.url + "', '" + req.query.datetime + "');", function(err) {
 	  if (err) throw err;	 
 	});
-
+	
 	connection.query("INSERT INTO categories (url, category) VALUES ('" + req.query.url + "', 'Click to Categorize');", function(err) {
-	  if (err) console.log(err);	 
-	});
+	  if (err) {console.log(err.code);}	 
+	});	
 
+	res.status(200).end();
 });
 
-app.listen(3000, function () {
-  console.log('Example app listening on port 3000!');
+//updaets the category of the url based on the drop down selection
+app.get('/updateCategory', function(req, res) {		
+	connection.query("UPDATE categories SET category='" + req.query.category + "' WHERE url='" + req.query.url + "';", function(err) {
+	  if (err) throw err;	 
+	});
+});
+
+app.listen(8081, function () {
+  console.log('Example app listening on port 8081!');
 });
 
 

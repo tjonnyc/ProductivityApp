@@ -52,14 +52,13 @@
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	//test
 	console.log("Background.js Started");
 	var currentURL = "";
 
 	//Opens a new tab and shows index.html
 	function openBehaviorViewer(e) {
 		chrome.tabs.create({
-			url: "http://localhost:3000/index.html"
+			url: "http://productivityapp-dev.us-west-2.elasticbeanstalk.com/index.html"
 		});
 	}
 
@@ -83,7 +82,6 @@
 			});
 		} else {
 			//only other options are idle or locked
-			console.log("Idle from idle");
 			recordTimeSegment("IDLE");
 		}
 	}
@@ -100,11 +98,16 @@
 	//Sends ajax request to the server to add a timesegment to the database
 	function recordTimeSegment(url) {
 		url = (0, _parseUrl_helper2.default)(url);
-		if (url !== currentTime) {
+		if (url !== currentURL) {
 			var currentTime = Date.now() - 1471344028132;
 			//Hit server with a get request and pass the url and datetime to add to the db
 			var xhttp = new XMLHttpRequest();
-			xhttp.open("GET", "http://localhost:3000/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
+			xhttp.onreadystatechange = function () {
+				if (xhttp.readyState == 4 && xhttp.status == 200) {
+					console.log("Database Updated");
+				}
+			};
+			xhttp.open("GET", "http://productivityapp-dev.us-west-2.elasticbeanstalk.com/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime);
 			xhttp.send();
 			console.log("Recorded URL: ", url, ", DATETIME: ", currentTime);
 			currentURL = url;
@@ -131,34 +134,14 @@
 	// Takes a raw url and returns the full domain
 	// (e.g. "https://mail.google.com/mail/u/0/#inbox" --> "mail.google.com")
 	function parseUrl(url) {
-		var fullSite;
-
-		// mainSite is the second-level domain (i.e. "https://mail.google.com/mail/u/0/#inbox" --> "mail.google.com")
-		// This is set up if needed for future use
-		var mainSite;
-
-		// domain is the top-level domain (i.e. "https://mail.google.com/mail/u/0/#inbox" --> ".com")
-		var domain;
-		var validUrl = false;
-		var domains = ['.com', '.edu', '.org', '.net', '.gov', '.int', '.mil'];
-
-		//Remove data after top-level domain
-		for (var i = 0; i < domains.length; i++) {
-			var index = url.indexOf(domains[i]);
-			if (index !== -1) {
-				domain = domains[i];
-				fullSite = url.slice(0, index) + domain;
-				validUrl = true;
-				break;
-			}
+		//In the special case that a url is an IDLE entry we don't want to parse it
+		if (url === "IDLE") {
+			return url;
 		}
 
-		//If url didn't have a recognized top-leve domain, returns unknown
-		if (!validUrl) {
-			return 'Unknown';
-		}
+		var fullSite = url;
 
-		//Remove 'http' or 'https' if there
+		//Remove 'http://', 'https://', 'chrome://', etc if there
 		if (fullSite.indexOf('://') !== -1) {
 			fullSite = fullSite.split('://')[1];
 		}
@@ -168,16 +151,40 @@
 			fullSite = fullSite.slice(4);
 		}
 
-		//If contains 2 periods, find mainSite
-		if (fullSite.indexOf('.') !== fullSite.lastIndexOf('.')) {
-			var reverseFullSite = fullSite.split('').reverse().join('');
-			var startIndex = fullSite.length - reverseFullSite.indexOf('.', domain.length);
-			mainSite = fullSite.slice(startIndex);
-		} else {
-			mainSite = fullSite;
+		//Remove everything after the next '/' if it exists
+		if (fullSite.indexOf('/') !== -1) {
+			fullSite = fullSite.slice(0, fullSite.indexOf('/'));
+		}
+
+		var domains = ['.com', '.edu', '.org', '.net', '.gov', '.int', '.mil', '.info', '.io'];
+
+		//Remove the domain if it exists
+		for (var i = 0; i < domains.length; i++) {
+
+			var domain = domains[i];
+			var endOfFullSite = fullSite.slice(fullSite.length - domain.length, fullSite.length);
+
+			if (endOfFullSite === domain) {
+				fullSite = fullSite.slice(0, fullSite.length - domain.length);
+				break;
+			}
 		}
 
 		return fullSite;
+
+		/*
+	 // mainSite is the second-level domain (i.e. "https://mail.google.com/mail/u/0/#inbox" --> "mail.google.com")
+	 // This is set up if needed for future use
+	 var mainSite;	
+	 
+	 //If fullsite contains periods, find mainSite
+	 if(fullSite.indexOf('.') !== -1) {
+	 	mainSite = fullSite.slice(fullSite.indexOf('.'));
+	 } else {
+	 	mainSite = fullSite;
+	 }
+	 
+	 */
 	}
 
 /***/ }
