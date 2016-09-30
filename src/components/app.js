@@ -9,12 +9,22 @@ export default class App extends Component {
 	constructor(props) {
 		super(props);
 
+		function getUrlParameter(name) {
+	    name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+	    var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+	    var results = regex.exec(location.search);
+	    return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+		};
+
 		this.state = {
 			websites: [],
 			view: "url",
 			categories: [],
 			activeNav: {urlView: "active", categoryView: ""},
+			userid: getUrlParameter('userid')
 		}
+
+		console.log(this.state.userid);
 
 		this.pullData();
 	}
@@ -35,7 +45,7 @@ export default class App extends Component {
 				setState({websites, categories});				
 	    }
 	  };
-	  xhttp.open("GET", "/data", true);
+	  xhttp.open("GET", "/data?userid=" + this.state.userid, true);
 	  xhttp.send();
 	}	
 
@@ -59,8 +69,8 @@ export default class App extends Component {
 		return timeSegments.reduce(function(prev, curr, index, array) {
 			if (curr.url !== "IDLE") {
 				let timeElapsed = 0;
-				if (index !== 0 && index !== array.length-1) {
-					timeElapsed = (array[index+1].datetime - curr.datetime);
+				if (index !== array.length-1) {
+					timeElapsed = array[index+1].datetime - curr.datetime;
 				}
 
 				let existingURLIndex = prev.findIndex((item) => {return item.url === curr.url});
@@ -142,7 +152,7 @@ export default class App extends Component {
 						<div className="col-sm-6 col-md-6 col-lg-6">
 							{chart}
 						</div>
-						<Website_Table id="displayedTable" websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+						<Website_Table id="displayedTable" userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
 					</div>
 				</div>
 			</div>

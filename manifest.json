@@ -1,10 +1,9 @@
 {
 	"manifest_version": 2,
-
 	"name": "Productivity App",
 	"description": "Helps you measure where you spend time on the internet",
-	"version": "1.0",
-
+	"version": "1.1",
+	"key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAhNfF77RzSPCcOOdn8x9WJXNfVmslYw6gnRjm+fnD7BtHMJv/PLfUE21zFDtQ0C3/DEu9ySW4PFcCNBydSuyY4lfm7Hr1/3D1U0zntEaEKxFvAjbQN9nUX03kc+QSn4mXctFVqIK2c+yKqZpzVhd0+hmsdAe8SeYJcWXgpTvFov/QsmaaF9hRHhSdS7WpYVxrwdoBq4Jrqn6SOpht6uqIDh1LzS7DCZiz996b6TG5jqD46ZN5BjR2NoElIVaKNDQ52aFtvmrXF7RH+kqJzizBFmkN+5At8W/DaqGIcYOx9ncGT0gmmYJKrROgd9DQAv5kBBVerkf5PlosfdYxpNYcNQIDAQAB",
 	"browser_action": {    
 		"default_popup_cc": "index.html"
 	},
@@ -20,6 +19,16 @@
 		"background",
 		"tabs",
 		"storage",
-		"idle"
-	]
+		"idle",
+		"identity",
+    "https://accounts.google.com/*",
+    "https://www.googleapis.com/*"
+	],
+	"oauth2": {
+    // client_id below is specifc to the application key. Follow the
+    // documentation to obtain one for your app.
+    "client_id": "797463233889-2hav69qskd3mcv20hm3s8ptfcko5mvo6.apps.googleusercontent.com",    							
+    "scopes": ["https://www.googleapis.com/auth/plus.login"]
+  }
 }
+

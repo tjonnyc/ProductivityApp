@@ -8,8 +8,11 @@ export default class Website_Table extends Component {
 	}
 
 	render() {
+
+		let props = this.props;
+
 		const Rows = this.props.websites.map(function(website, index) {
-			return <Website_Row key={index} index={index} website={website} />;
+			return <Website_Row key={index} index={index} userid={props.userid} website={website} />;
 		});
 
 		return (
