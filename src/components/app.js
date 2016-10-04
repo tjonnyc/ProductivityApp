@@ -24,8 +24,6 @@ export default class App extends Component {
 			userid: getUrlParameter('userid')
 		}
 
-		console.log(this.state.userid);
-
 		this.pullData();
 	}
 
@@ -50,6 +48,7 @@ export default class App extends Component {
 	}	
 
 	consolidateCategories(websites) {
+
 		return	websites.reduce(function(prev, curr, index, array) {
 			let existingCategoryIndex = prev.findIndex((item) => {return item.category === curr.category});
 
@@ -67,6 +66,7 @@ export default class App extends Component {
 	consolidateTimeSegments(timeSegments) {
 		
 		return timeSegments.reduce(function(prev, curr, index, array) {
+		
 			if (curr.url !== "IDLE") {
 				let timeElapsed = 0;
 				if (index !== array.length-1) {

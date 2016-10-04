@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import $ from 'jQuery';
 
 export default class Website_Row extends Component {
 
@@ -15,7 +14,7 @@ export default class Website_Row extends Component {
 		this.setState({category: event.target.text});
 
 		var xhttp = new XMLHttpRequest();
-	  xhttp.open("GET", "/updateCategory?url=" + encodeURIComponent(this.props.website.url) + "&category=" + event.target.text + "&userid=" + this.props.userid);
+	  xhttp.open("GET", "/updateCategory?url=" + this.props.website.url + "&category=" + event.target.text + "&userid=" + this.props.userid);
 	  xhttp.send();
 	}
 

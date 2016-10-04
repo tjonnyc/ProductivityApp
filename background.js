@@ -109,7 +109,9 @@
 		//Called when a tab is made active (i.e. switched to by the user)
 		function activeTabChanged(activeInfo) {
 			chrome.tabs.query({ active: true }, function (tabs) {
-				return recordTimeSegment(tabs[0].url);
+				if (tabs.length > 0) {
+					recordTimeSegment(tabs[0].url);
+				}
 			});
 		}
 
@@ -144,16 +146,12 @@
 			url = (0, _parseUrl_helper2.default)(url);
 			if (url !== currentURL) {
 				var currentTime = Date.now();
-				//Hit server with a get request and pass the url and datetime to add to the db
+
+				//Hit server with a get request and pass the url and datetime and hashed userid to add to the db
 				var xhttp = new XMLHttpRequest();
-				xhttp.onreadystatechange = function () {
-					if (xhttp.readyState == 4 && xhttp.status == 200) {
-						console.log("Database Updated");
-					}
-				};
-				xhttp.open("GET", server + "/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime + "&userid=" + user_id);
+				console.log(server + "/addTimeSegment?url=" + url + "&datetime=" + currentTime + "&userid=" + user_id);
+				xhttp.open("GET", server + "/addTimeSegment?url=" + url + "&datetime=" + currentTime + "&userid=" + user_id);
 				xhttp.send();
-				console.log("Recorded URL: ", url, ", DATETIME: ", currentTime, ", USERID: ", user_id);
 				currentURL = url;
 			}
 		}

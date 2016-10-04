@@ -45,8 +45,7 @@ function onUserInfoFetched(error, status, response) {
 
 var currentURL = "";
 
-function continuePostUserID()
-{
+function continuePostUserID() {
 
 	//Opens a new tab and shows index.html
 	function openBehaviorViewer(e)	{
@@ -57,7 +56,11 @@ function continuePostUserID()
 
 	//Called when a tab is made active (i.e. switched to by the user)
 	function activeTabChanged(activeInfo) {
-		chrome.tabs.query({ active: true}, (tabs) => recordTimeSegment(tabs[0].url))
+		chrome.tabs.query({ active: true}, (tabs) => {
+			if (tabs.length > 0) {
+				recordTimeSegment(tabs[0].url);
+			}
+		});
 	}
 
 	//Called when a tab is updated (i.e. when a user types in a new url)
@@ -68,7 +71,7 @@ function continuePostUserID()
 	//Called when the browser goes idle or becomes active
 	function idleStateChanged(newState) {
 		if (newState === "active") {
-			chrome.tabs.query({ active: true}, (tabs) => recordTimeSegment(tabs[0].url))	
+			chrome.tabs.query({ active: true}, (tabs) => recordTimeSegment(tabs[0].url));	
 		} else { //only other options are idle or locked
 			recordTimeSegment("IDLE");
 		}
@@ -85,16 +88,12 @@ function continuePostUserID()
 		if (url !== currentURL)
 		{
 			var currentTime = Date.now();
-			//Hit server with a get request and pass the url and datetime to add to the db
+
+			//Hit server with a get request and pass the url and datetime and hashed userid to add to the db
 			var xhttp = new XMLHttpRequest(); 
-			xhttp.onreadystatechange = function() {
-		    if (xhttp.readyState == 4 && xhttp.status == 200) {
-					console.log("Database Updated");
-		    }
-		  }; 
-		  xhttp.open("GET", server + "/addTimeSegment?url=" + encodeURIComponent(url) + "&datetime=" + currentTime + "&userid=" + user_id);
-		  xhttp.send();
-		  console.log("Recorded URL: ", url, ", DATETIME: ", currentTime, ", USERID: ", user_id); 	  
+			console.log(server + "/addTimeSegment?url=" + url + "&datetime=" + currentTime + "&userid=" + user_id);
+		  xhttp.open("GET", server + "/addTimeSegment?url=" + url + "&datetime=" + currentTime + "&userid=" + user_id);
+		  xhttp.send();  
 		  currentURL = url;
 		}
 	}
