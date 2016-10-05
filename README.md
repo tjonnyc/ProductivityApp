@@ -1,5 +1,5 @@
 #<Productivity App>
-<Productivity App> is a Chrome extension which shows the user where they spend time on the internet so that users better understand how they spend their time online.
+<Productivity App> is a Chrome extension which shows the user where they spend time on the internet
 
 ##Tech Stack
 * React with Redux
@@ -20,5 +20,3 @@
 --Displaying Data - Local Version
 1. Run `webpack` in cmdr
 2. In Your Browser, go to `http://localhost:8081/`
-
-
