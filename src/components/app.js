@@ -20,7 +20,7 @@ export default class App extends Component {
 			websites: [],
 			view: "url",
 			categories: [],
-			activeNav: {urlView: "active", categoryView: ""},
+			activeNav: {urlView: "active", categoryView: "", settingsView: ""},
 			userid: getUrlParameter('userid')
 		}
 
@@ -120,9 +120,11 @@ export default class App extends Component {
 
 	changeView(event) {
 		if (event.target.text === "URL View") {
-			this.setState({view: "url", activeNav: {urlView: "active", categoryView: ""}});
+			this.setState({view: "url", activeNav: {urlView: "active", categoryView: "", settingsView: ""}});
 		} else if (event.target.text === "Category View") {
-			this.setState({view: "category", activeNav: {urlView: "", categoryView: "active"}});
+			this.setState({view: "category", activeNav: {urlView: "", categoryView: "active", settingsView: ""}});
+		} else if (event.target.text === "Settings") {
+			this.setState({view: "settings", activeNav: {urlView: "", categoryView: "", settingsView: "active"}});
 		}
 	}
 
@@ -144,6 +146,7 @@ export default class App extends Component {
 				    <ul className="nav navbar-nav">
 				    	<li className={this.state.activeNav.urlView}><a href="#" onClick={this.changeView.bind(this)}>URL View</a></li>
 				    	<li className={this.state.activeNav.categoryView}><a href="#" onClick={this.changeView.bind(this)}>Category View</a></li>
+				    	<li className={this.state.activeNav.settingsView} id={"SettingsNav"}><a href="#" onClick={this.changeView.bind(this)}>Settings</a></li>
 				    </ul>
 				  </div>
 				</nav>
