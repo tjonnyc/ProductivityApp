@@ -29,6 +29,8 @@ export default class Website_Row extends Component {
 			var xhttp = new XMLHttpRequest();
 		  xhttp.open("GET", "/updateCategory?url=" + this.props.website.url + "&category=" + event.target.value + "&userid=" + this.props.userid);
 		  xhttp.send();
+
+		  this.props.updateCategory(this.props.website.url, event.target.value);
 		}
 	}
 

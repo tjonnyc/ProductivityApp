@@ -21618,10 +21618,23 @@
 			return _this;
 		}
 
-		//Pulls the users data from the AWS Server and loads the websites array in state
-
-
 		_createClass(App, [{
+			key: 'updateCategory',
+			value: function updateCategory(url, category) {
+				var index = this.state.websites.findIndex(function (element, index, array) {
+					return element.url === url;
+				});
+
+				var websites = this.state.websites;
+				websites[index].category = category;
+				var categories = this.consolidateCategories(websites);
+
+				this.setState({ websites: websites, categories: categories });
+			}
+
+			//Pulls the users data from the AWS Server and loads the websites array in state
+
+		}, {
 			key: 'pullData',
 			value: function pullData() {
 				var rawData = [];
@@ -21799,7 +21812,7 @@
 								{ className: 'col-sm-6 col-md-6 col-lg-6' },
 								chart
 							),
-							_react2.default.createElement(_website_table2.default, { id: 'displayedTable', userid: this.state.userid, websites: this.state.websites.slice(0).sort(function (a, b) {
+							_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.updateCategory.bind(this), userid: this.state.userid, websites: this.state.websites.slice(0).sort(function (a, b) {
 									return b.timeElapsed - a.timeElapsed;
 								}) })
 						)
@@ -47064,7 +47077,7 @@
 				var props = this.props;
 
 				var Rows = this.props.websites.map(function (website, index) {
-					return _react2.default.createElement(_website_row2.default, { key: index, index: index, userid: props.userid, website: website });
+					return _react2.default.createElement(_website_row2.default, { key: index, index: index, userid: props.userid, website: website, updateCategory: props.updateCategory.bind(this) });
 				});
 
 				return _react2.default.createElement(
@@ -47172,6 +47185,8 @@
 					var xhttp = new XMLHttpRequest();
 					xhttp.open("GET", "/updateCategory?url=" + this.props.website.url + "&category=" + event.target.value + "&userid=" + this.props.userid);
 					xhttp.send();
+
+					this.props.updateCategory(this.props.website.url, event.target.value);
 				}
 			}
 		}, {

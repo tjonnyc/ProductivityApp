@@ -27,6 +27,18 @@ export default class App extends Component {
 		this.pullData();
 	}
 
+	updateCategory(url, category) {
+		let index = this.state.websites.findIndex(function(element, index, array) {
+			return element.url === url;
+		})
+
+		let websites = this.state.websites;
+		websites[index].category = category;
+		let categories = this.consolidateCategories(websites);
+
+		this.setState({ websites, categories });
+	}
+
 	//Pulls the users data from the AWS Server and loads the websites array in state
 	pullData() {
 		let rawData = [];
@@ -155,7 +167,7 @@ export default class App extends Component {
 						<div className="col-sm-6 col-md-6 col-lg-6">
 							{chart}
 						</div>
-						<Website_Table id="displayedTable" userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+						<Website_Table id="displayedTable" updateCategory={this.updateCategory.bind(this)} userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
 					</div>
 				</div>
 			</div>
