@@ -20,11 +20,23 @@ export default class App extends Component {
 			websites: [],
 			view: "url",
 			categories: [],
-			activeNav: {urlView: "active", categoryView: ""},
+			activeNav: {urlView: "active", categoryView: "", settingsView: ""},
 			userid: getUrlParameter('userid')
 		}
 
 		this.pullData();
+	}
+
+	updateCategory(url, category) {
+		let index = this.state.websites.findIndex(function(element, index, array) {
+			return element.url === url;
+		})
+
+		let websites = this.state.websites;
+		websites[index].category = category;
+		let categories = this.consolidateCategories(websites);
+
+		this.setState({ websites, categories });
 	}
 
 	//Pulls the users data from the AWS Server and loads the websites array in state
@@ -120,9 +132,11 @@ export default class App extends Component {
 
 	changeView(event) {
 		if (event.target.text === "URL View") {
-			this.setState({view: "url", activeNav: {urlView: "active", categoryView: ""}});
+			this.setState({view: "url", activeNav: {urlView: "active", categoryView: "", settingsView: ""}});
 		} else if (event.target.text === "Category View") {
-			this.setState({view: "category", activeNav: {urlView: "", categoryView: "active"}});
+			this.setState({view: "category", activeNav: {urlView: "", categoryView: "active", settingsView: ""}});
+		} else if (event.target.text === "Settings") {
+			this.setState({view: "settings", activeNav: {urlView: "", categoryView: "", settingsView: "active"}});
 		}
 	}
 
@@ -144,6 +158,7 @@ export default class App extends Component {
 				    <ul className="nav navbar-nav">
 				    	<li className={this.state.activeNav.urlView}><a href="#" onClick={this.changeView.bind(this)}>URL View</a></li>
 				    	<li className={this.state.activeNav.categoryView}><a href="#" onClick={this.changeView.bind(this)}>Category View</a></li>
+				    	<li className={this.state.activeNav.settingsView} id={"SettingsNav"}><a href="#" onClick={this.changeView.bind(this)}>Settings</a></li>
 				    </ul>
 				  </div>
 				</nav>
@@ -152,7 +167,7 @@ export default class App extends Component {
 						<div className="col-sm-6 col-md-6 col-lg-6">
 							{chart}
 						</div>
-						<Website_Table id="displayedTable" userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+						<Website_Table id="displayedTable" updateCategory={this.updateCategory.bind(this)} userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
 					</div>
 				</div>
 			</div>

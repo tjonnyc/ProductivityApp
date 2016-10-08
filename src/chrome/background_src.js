@@ -5,7 +5,7 @@ console.log("Background.js Started");
 var devServer = "http://localhost:8081";
 var productionServer = "http://productivityapp-dev.us-west-2.elasticbeanstalk.com";
 
-var server = productionServer;
+var server = devServer;
 
 var user_id = 0;
 
