@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import Autocomplete from 'react-autocomplete';
 
 export default class Website_Row extends Component {
 
@@ -6,35 +7,95 @@ export default class Website_Row extends Component {
 		super(props);
 
 		this.state = {
-			category:	props.website.category
+			category:	props.website.category,
+			categoryChanged: false
 		}
 	}
 
-	changeHandler(event) {
-		this.setState({category: event.target.text});
+	shouldItemRender(category, searchTerm) {
+		return (category.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1);
+	}
 
-		var xhttp = new XMLHttpRequest();
-	  xhttp.open("GET", "/updateCategory?url=" + this.props.website.url + "&category=" + event.target.text + "&userid=" + this.props.userid);
-	  xhttp.send();
+	sortItems(a, b, searchTerm) {
+		return (
+    	a.name.toLowerCase().indexOf(searchTerm.toLowerCase()) >
+    	b.name.toLowerCase().indexOf(searchTerm.toLowerCase()) ? 1 : -1
+  	)
+	}
+
+	updateDatabase(event) {		
+		if (this.state.categoryChanged) {
+			console.log("/updateCategory?url=" + this.props.website.url + "&category=" + event.target.value + "&userid=" + this.props.userid);
+			var xhttp = new XMLHttpRequest();
+		  xhttp.open("GET", "/updateCategory?url=" + this.props.website.url + "&category=" + event.target.value + "&userid=" + this.props.userid);
+		  xhttp.send();
+
+		  this.props.updateCategory(this.props.website.url, event.target.value);
+		}
 	}
 
 	render() {
+
+		let styles = {
+		  item: {
+		    padding: '2px 6px',
+		    cursor: 'default'
+		  },
+
+		  highlightedItem: {
+		    color: 'white',
+		    background: 'hsl(200, 50%, 50%)',
+		    padding: '2px 6px',
+		    cursor: 'default'
+		  },
+
+		  menu: {
+		    border: 'solid 1px #ccc'
+		  }
+		}
+
 		return (
 			<tr>
 	      <td>{this.props.website.url}</td>
 	      <td>{this.props.website.timeElapsed}</td>
-	    	<td>
-		    	<div className="dropdown">
-					  <button className="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-					    {this.state.category}
-					    <span className="caret"></span>
-					  </button>
-					  <ul className="dropdown-menu" aria-labelledby="dropdownMenu1">
-					    <li><a href="#" onClick={this.changeHandler.bind(this)}>Social</a></li>
-					    <li><a href="#" onClick={this.changeHandler.bind(this)}>Programming</a></li>
-					    <li><a href="#" onClick={this.changeHandler.bind(this)}>Other</a></li>
-					  </ul>
-					</div>
+	    	<td onBlur={this.updateDatabase.bind(this)}>
+		    	<Autocomplete
+	          value={this.state.category}          	
+	          items={[
+	          	{name: "Entertainment: TV/Video"},
+	          	{name: "Entertainment: Social Network"},
+	          	{name: "Entertainment: Reading"},
+	          	{name: "News"},
+	          	{name: "Shopping"},
+	          	{name: "Search Engine"},
+	          	{name: "Research"},
+	          	{name: "Email"},
+	          	{name: "Entertainment: Games"},
+	          	{name: "Programming"},
+	          	{name: "Work"},
+	          	{name: "Banking"},
+	          	{name: "Pornography"},
+	          	{name: "Messaging"},
+	          	{name: "Online Dating"},
+	          	{name: "Entertainment: Sports"},
+	          	{name: "Fantasy Football"},
+	          	{name: "Music"},
+	          	{name: "School"},
+	          	{name: "Productivity"},
+	          	{name: "Errands"},
+	        	]}
+	          getItemValue={(item) => item.name}
+	          shouldItemRender={this.shouldItemRender.bind(this)}
+	          sortItems={this.sortItems.bind(this)}
+	          onChange={(event, value) => this.setState({ category: value, categoryChanged: true })}
+	          onSelect={value => this.setState({ category: value, categoryChanged: true })}
+	          renderItem={(item, isHighlighted) => (
+	            <div
+	              style={isHighlighted ? styles.highlightedItem : styles.item}
+	              key={item.name}
+	            >{item.name}</div>
+	          )}
+        	/>
 				</td>
     	</tr>
 		);
