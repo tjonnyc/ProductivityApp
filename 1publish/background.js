@@ -61,6 +61,7 @@
 
 	var user_id = 0;
 
+	//Gets our AuthToken from Google Account and calls request complete
 	chrome.identity.getAuthToken({ 'interactive': true }, function (token) {
 		if (chrome.runtime.lastError) {
 			console.log(chrome.runtime.lastError);
@@ -76,6 +77,7 @@
 		xhr.send();
 	});
 
+	//Check for errors and calls onUserInfoFetched
 	function requestComplete() {
 		if (this.status == 401) {
 			console.log("Error in requestComplete" + this.status);
@@ -85,6 +87,7 @@
 		}
 	}
 
+	//Sets the user_id and calls continuePostUserID
 	function onUserInfoFetched(error, status, response) {
 		if (!error && status == 200) {
 			var user_info = JSON.parse(response);
@@ -99,45 +102,37 @@
 
 	function continuePostUserID() {
 
-		//Opens a new tab and shows index.html
+		//Opens a new tab and shows index.html on click of extension icon
 		function openBehaviorViewer(e) {
 			chrome.tabs.create({
 				url: server + "/index.html?userid=" + user_id
 			});
 		}
 
-		//Called when a tab is made active (i.e. switched to by the user)
-		function activeTabChanged(activeInfo) {
-			chrome.tabs.query({ active: true }, function (tabs) {
-				if (tabs.length > 0) {
-					recordTimeSegment(tabs[0].url);
-				}
-			});
-		}
-
-		//Called when a tab is updated (i.e. when a user types in a new url)
-		function tabUpdated(tabID, changeInfo, tab) {
-			recordTimeSegment(tab.url);
-		}
-
-		//Called when the browser goes idle or becomes active
-		function idleStateChanged(newState) {
-			if (newState === "active") {
-				chrome.tabs.query({ active: true }, function (tabs) {
-					return recordTimeSegment(tabs[0].url);
+		//Identifies the currently active URL (or IDLE)
+		function updateURL() {
+			console.log("Update Called");
+			//First check if any windows are open, if they are focused, and if the machine is idle
+			chrome.windows.getLastFocused({}, function (theWindow) {
+				chrome.idle.queryState(60, function (newState) {
+					//If a window is open and is focused...
+					if (theWindow && theWindow.focused) {
+						chrome.tabs.query({ active: true, windowId: theWindow.id }, function (tabs) {
+							//If the computer is not idle OR if the active tab is both audible and not muted send the current URL
+							if (newState === "active" || tabs[0].audible && !tabs[0].mutedInfo.muted) {
+								recordTimeSegment(tabs[0].url);
+							}
+							//If the computer is idle AND the active tab is either not playing music or the music is muted then record an idle
+							else {
+									recordTimeSegment("IDLE");
+								}
+						});
+					}
+					//If there is no foused or open chrome window then we send an idle
+					else {
+							recordTimeSegment("IDLE");
+						}
 				});
-			} else {
-				//only other options are idle or locked
-				recordTimeSegment("IDLE");
-			}
-		}
-
-		//Called when a tab is closed
-		function tabRemoved(tabId, removeInfo) {
-			chrome.tabs.query({}, function (tabs) {
-				if (tabs.length === 0) {
-					recordTimeSegment("IDLE");
-				}
 			});
 		}
 
@@ -157,12 +152,58 @@
 		}
 
 		//Add our event listeners
-		chrome.browserAction.onClicked.addListener(openBehaviorViewer);
-		chrome.tabs.onActivated.addListener(activeTabChanged);
-		chrome.tabs.onUpdated.addListener(tabUpdated);
-		chrome.idle.onStateChanged.addListener(idleStateChanged);
-		chrome.tabs.onRemoved.addListener(tabRemoved);
+		chrome.browserAction.onClicked.addListener(openBehaviorViewer); //Handles opening the display page
+
+		//We also need to add a script which calls updateURL each minute
+		window.setInterval(updateURL, 5000);
 	}
+	/*
+	//Gets tabs which are 
+
+		
+		//Add listeners which run a check on the logging state as events occur
+		chrome.tabs.onActivated.addListener(updateURL); 
+		chrome.tabs.onUpdated.addListener(updateURL); 
+		chrome.idle.onStateChanged.addListener(updateURL); 
+		chrome.tabs.onRemoved.addListener(updateURL);
+
+
+		//Called when a tab is made active (i.e. switched to by the user)
+		function activeTabChanged(activeInfo) {
+			chrome.tabs.query({ active: true}, (tabs) => {
+				if (tabs.length > 0) {
+					recordTimeSegment(tabs[0].url);
+				}
+			});
+		}
+
+		//Called when a tab is updated (i.e. when a user types in a new url)
+		function tabUpdated(tabID, changeInfo, tab) {
+			recordTimeSegment(tab.url);
+		}
+
+
+		//Called when a tab is closed
+		function tabRemoved(tabId, removeInfo) {
+			chrome.tabs.query({}, (tabs) => { if(tabs.length === 0) { recordTimeSegment("IDLE") });
+		}
+
+
+		//Called when the browser goes idle or becomes active
+		function idleStateChanged(newState) {
+			if (newState === "active") {
+				
+				//check for focus
+
+				chrome.tabs.query({ active: true}, (tabs) => recordTimeSegment(tabs[0].url));	
+			} else { //only other options are idle or locked
+				
+				//check for focus and sound
+
+				recordTimeSegment("IDLE");
+			}
+		}
+	*/
 
 /***/ },
 /* 1 */

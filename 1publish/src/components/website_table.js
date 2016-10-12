@@ -12,7 +12,7 @@ export default class Website_Table extends Component {
 		let props = this.props;
 
 		const Rows = this.props.websites.map(function(website, index) {
-			return <Website_Row key={index} index={index} userid={props.userid} website={website} />;
+			return <Website_Row key={index} index={index} userid={props.userid} website={website} updateCategory={props.updateCategory.bind(this)} />;
 		});
 
 		return (
