@@ -57,7 +57,7 @@
 	var devServer = "http://localhost:8081";
 	var productionServer = "http://productivityapp-dev.us-west-2.elasticbeanstalk.com";
 
-	var server = devServer;
+	var server = productionServer;
 
 	var user_id = 0;
 
@@ -112,39 +112,27 @@
 		//Identifies the currently active URL (or IDLE)
 		function updateURL() {
 			console.log("Update Called");
-
-			//First check if any tabs are open
-			chrome.tabs.query({}, function (anyTabs) {
-				if (anyTabs.length !== 0) {
-					//Then check if the chrome window is focused
-					chrome.windows.getLastFocused({}, function (theWindow) {
-						//If a window is is focused...
-						if (theWindow.focused) {
-							//Then we get the information about the active tab in the open window
-							chrome.tabs.query({ active: true, windowId: theWindow.id }, function (tabs) {
-								//We also check to see if the computer is idle
-								chrome.idle.queryState(60, function (newState) {
-									//If the computer is not idle OR if the active tab is both audible and not muted send the current URL
-									if (newState === "active" || tabs[0].audible && !tabs[0].mutedInfo.muted) {
-										recordTimeSegment(tabs[0].url);
-									}
-									//If the computer is idle AND the active tab is either not playing music or the music is muted then record an idle
-									else {
-											recordTimeSegment("IDLE");
-										}
-								});
-							});
-						}
-						//If there is no foused window then we send an idle
-						else {
-								recordTimeSegment("IDLE");
+			//First check if any windows are open, if they are focused, and if the machine is idle
+			chrome.windows.getLastFocused({}, function (theWindow) {
+				chrome.idle.queryState(60, function (newState) {
+					//If a window is open and is focused...
+					if (theWindow && theWindow.focused) {
+						chrome.tabs.query({ active: true, windowId: theWindow.id }, function (tabs) {
+							//If the computer is not idle OR if the active tab is both audible and not muted send the current URL
+							if (newState === "active" || tabs[0].audible && !tabs[0].mutedInfo.muted) {
+								recordTimeSegment(tabs[0].url);
 							}
-					});
-				}
-				//If there is no open tab then we send an idle
-				else {
-						recordTimeSegment("IDLE");
+							//If the computer is idle AND the active tab is either not playing music or the music is muted then record an idle
+							else {
+									recordTimeSegment("IDLE");
+								}
+						});
 					}
+					//If there is no foused or open chrome window then we send an idle
+					else {
+							recordTimeSegment("IDLE");
+						}
+				});
 			});
 		}
 

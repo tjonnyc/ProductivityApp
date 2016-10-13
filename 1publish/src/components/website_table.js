@@ -11,12 +11,8 @@ export default class Website_Table extends Component {
 
 		let props = this.props;
 
-		let totalTime = this.props.websites.reduce(function(prev, curr, index, array) {
-			return prev + curr.timeElapsed;
-		}, 0);
-
 		const Rows = this.props.websites.map(function(website, index) {
-			return <Website_Row key={index} index={index} userid={props.userid} website={website} totalTime={totalTime} updateCategory={props.updateCategory.bind(this)} />;
+			return <Website_Row key={index} index={index} userid={props.userid} website={website} updateCategory={props.updateCategory.bind(this)} />;
 		});
 
 		return (
@@ -25,8 +21,7 @@ export default class Website_Table extends Component {
 					    <thead>
 						    <tr>
 						      <th>Website</th>
-						      <th>% of Time Spent</th>
-						      <th>Min Per Day</th>
+						      <th>Time Spent</th>
 						      <th>Category</th>
 						    </tr>
 						  </thead>
