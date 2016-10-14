@@ -1,7 +1,26 @@
 /node_modules
+<<<<<<< HEAD
 bundle.js
+=======
+>>>>>>> 6f67336d836fd00acabfa21fe2cc9a769843dbcc
 npm-debug.log
 
 # IntelliJ
 *.iml
+<<<<<<< HEAD
+/.idea
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml
+=======
 /.idea
+
+# Elastic Beanstalk Files
+
+.elasticbeanstalk/*
+
+!.elasticbeanstalk/*.cfg.yml
+
+!.elasticbeanstalk/*.global.yml
+>>>>>>> 6f67336d836fd00acabfa21fe2cc9a769843dbcc

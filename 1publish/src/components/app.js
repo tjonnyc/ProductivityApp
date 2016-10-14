@@ -21,8 +21,7 @@ export default class App extends Component {
 			view: "url",
 			categories: [],
 			activeNav: {urlView: "active", categoryView: "", settingsView: ""},
-			userid: getUrlParameter('userid'),
-			totalNumDays: 0
+			userid: getUrlParameter('userid')
 		}
 
 		this.pullData();
@@ -77,12 +76,6 @@ export default class App extends Component {
 	}
 
 	consolidateTimeSegments(timeSegments) {
-
-		if (timeSegments.length > 0) {
-			var timeDiff = Math.abs(Date.now() - Number(timeSegments[0].datetime));			
-			var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 			
-			this.setState({ totalNumDays: diffDays })
-		}
 		
 		return timeSegments.reduce(function(prev, curr, index, array) {
 		
@@ -174,7 +167,7 @@ export default class App extends Component {
 						<div className="col-sm-6 col-md-6 col-lg-6">
 							{chart}
 						</div>
-						<Website_Table id="displayedTable" updateCategory={this.updateCategory.bind(this)} totalNumDays={this.state.totalNumDays} userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+						<Website_Table id="displayedTable" updateCategory={this.updateCategory.bind(this)} userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
 					</div>
 				</div>
 			</div>
