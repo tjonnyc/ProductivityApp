@@ -21611,7 +21611,8 @@
 				view: "url",
 				categories: [],
 				activeNav: { urlView: "active", categoryView: "", settingsView: "" },
-				userid: getUrlParameter('userid')
+				userid: getUrlParameter('userid'),
+				totalNumDays: 0
 			};
 
 			_this.pullData();
@@ -21675,6 +21676,12 @@
 		}, {
 			key: 'consolidateTimeSegments',
 			value: function consolidateTimeSegments(timeSegments) {
+
+				if (timeSegments.length > 0) {
+					var timeDiff = Math.abs(Date.now() - Number(timeSegments[0].datetime));
+					var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24));
+					this.setState({ totalNumDays: diffDays });
+				}
 
 				return timeSegments.reduce(function (prev, curr, index, array) {
 
@@ -21812,7 +21819,7 @@
 								{ className: 'col-sm-6 col-md-6 col-lg-6' },
 								chart
 							),
-							_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.updateCategory.bind(this), userid: this.state.userid, websites: this.state.websites.slice(0).sort(function (a, b) {
+							_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.updateCategory.bind(this), totalNumDays: this.state.totalNumDays, userid: this.state.userid, websites: this.state.websites.slice(0).sort(function (a, b) {
 									return b.timeElapsed - a.timeElapsed;
 								}) })
 						)
@@ -47081,7 +47088,7 @@
 				}, 0);
 
 				var Rows = this.props.websites.map(function (website, index) {
-					return _react2.default.createElement(_website_row2.default, { key: index, index: index, userid: props.userid, website: website, totalTime: totalTime, updateCategory: props.updateCategory.bind(this) });
+					return _react2.default.createElement(_website_row2.default, { key: index, index: index, userid: props.userid, website: website, totalNumDays: props.totalNumDays, totalTime: totalTime, updateCategory: props.updateCategory.bind(this) });
 				});
 
 				return _react2.default.createElement(
@@ -47104,7 +47111,12 @@
 								_react2.default.createElement(
 									'th',
 									null,
-									'Time Spent'
+									'% of Time Spent'
+								),
+								_react2.default.createElement(
+									'th',
+									null,
+									'Min Per Day'
 								),
 								_react2.default.createElement(
 									'th',
@@ -47232,7 +47244,7 @@
 					_react2.default.createElement(
 						'td',
 						null,
-						this.props.website.timeElapsed
+						Math.floor(this.props.website.timeElapsed / this.props.totalNumDays / (1000 * 60))
 					),
 					_react2.default.createElement(
 						'td',

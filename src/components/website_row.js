@@ -58,7 +58,7 @@ export default class Website_Row extends Component {
 			<tr>
 	      <td>{this.props.website.url}</td>
 	      <td>{Math.floor((this.props.website.timeElapsed/this.props.totalTime) * 100) + "%"}</td>
-	      <td>{this.props.website.timeElapsed}</td>
+	      <td>{Math.floor(this.props.website.timeElapsed/this.props.totalNumDays/(1000 * 60))}</td>
 	    	<td onBlur={this.updateDatabase.bind(this)}>
 		    	<Autocomplete
 	          value={this.state.category}          	
