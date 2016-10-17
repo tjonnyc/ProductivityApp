@@ -5,7 +5,7 @@ export default class Website_Table extends Component {
 
 	constructor(props) {
 		super(props);
-	}
+	}	
 
 	render() {
 

@@ -5,11 +5,6 @@ export default class Website_Row extends Component {
 
 	constructor(props) {
 		super(props);
-
-		this.state = {
-			category:	props.website.category,
-			categoryChanged: false
-		}
 	}
 
 	shouldItemRender(category, searchTerm) {
@@ -23,14 +18,9 @@ export default class Website_Row extends Component {
   	)
 	}
 
-	updateDatabase(event) {		
-		if (this.state.categoryChanged) {
-			console.log("/updateCategory?url=" + this.props.website.url + "&category=" + event.target.value + "&userid=" + this.props.userid);
-			var xhttp = new XMLHttpRequest();
-		  xhttp.open("GET", "/updateCategory?url=" + this.props.website.url + "&category=" + event.target.value + "&userid=" + this.props.userid);
-		  xhttp.send();
-
-		  this.props.updateCategory(this.props.website.url, event.target.value);
+	updateCategory(category) {
+		if (category !== this.props.website.category) {
+		  this.props.updateCategory(this.props.website.url, category);
 		}
 	}
 
@@ -59,9 +49,9 @@ export default class Website_Row extends Component {
 	      <td>{this.props.website.url}</td>
 	      <td>{Math.floor((this.props.website.timeElapsed/this.props.totalTime) * 100) + "%"}</td>
 	      <td>{Math.floor(this.props.website.timeElapsed/this.props.totalNumDays/(1000 * 60))}</td>
-	    	<td onBlur={this.updateDatabase.bind(this)}>
+	    	<td>
 		    	<Autocomplete
-	          value={this.state.category}          	
+	          value={this.props.website.category}          	
 	          items={[
 	          	{name: "Entertainment: TV/Video"},
 	          	{name: "Entertainment: Social Network"},
@@ -88,8 +78,8 @@ export default class Website_Row extends Component {
 	          getItemValue={(item) => item.name}
 	          shouldItemRender={this.shouldItemRender.bind(this)}
 	          sortItems={this.sortItems.bind(this)}
-	          onChange={(event, value) => this.setState({ category: value, categoryChanged: true })}
-	          onSelect={value => this.setState({ category: value, categoryChanged: true })}
+	          onChange={(event, value) => this.updateCategory(value)}
+	          onSelect={value => this.updateCategory(value)}
 	          renderItem={(item, isHighlighted) => (
 	            <div
 	              style={isHighlighted ? styles.highlightedItem : styles.item}

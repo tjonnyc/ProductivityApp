@@ -22,22 +22,55 @@ export default class App extends Component {
 			categories: [],
 			activeNav: {urlView: "active", categoryView: "", settingsView: ""},
 			userid: getUrlParameter('userid'),
-			totalNumDays: 0
-		}
+			totalNumDays: 0,
+			categoriesChanged: [],
+			intervalIndex: setInterval(this.updateDatabase.bind(this), 30000)
+		}	
 
 		this.pullData();
 	}
 
 	updateCategory(url, category) {
+		
+		clearInterval(this.state.intervalIndex); 
+
 		let index = this.state.websites.findIndex(function(element, index, array) {
 			return element.url === url;
 		})
 
 		let websites = this.state.websites;
+		let oldCategory = websites[index].category;
 		websites[index].category = category;
 		let categories = this.consolidateCategories(websites);
 
-		this.setState({ websites, categories });
+		index = this.state.categoriesChanged.findIndex(function(element, index, array) {
+			return element.url === url;
+		})
+
+		let categoriesChanged = this.state.categoriesChanged;
+
+		if (index === -1) {
+			categoriesChanged.push({ url, category, oldCategory });
+		}
+		else {
+			categoriesChanged[index].category = category;
+		}
+
+		this.setState({ websites, categories, categoriesChanged, intervalIndex: setInterval(this.updateDatabase.bind(this), 30000) });
+	}
+
+	updateDatabase(url, category) {		
+
+		while (this.state.categoriesChanged.length > 0) {
+			let categoriesChanged = this.state.categoriesChanged;
+			let change = categoriesChanged.pop();
+			this.setState({ categoriesChanged });
+
+			var xhttp = new XMLHttpRequest();
+			console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(this.state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+		  xhttp.open("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(this.state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+		  xhttp.send();			
+		}
 	}
 
 	//Pulls the users data from the AWS Server and loads the websites array in state

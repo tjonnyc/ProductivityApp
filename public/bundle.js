@@ -21612,7 +21612,9 @@
 				categories: [],
 				activeNav: { urlView: "active", categoryView: "", settingsView: "" },
 				userid: getUrlParameter('userid'),
-				totalNumDays: 0
+				totalNumDays: 0,
+				categoriesChanged: [],
+				intervalIndex: setInterval(_this.updateDatabase.bind(_this), 30000)
 			};
 
 			_this.pullData();
@@ -21622,15 +21624,50 @@
 		_createClass(App, [{
 			key: 'updateCategory',
 			value: function updateCategory(url, category) {
+
+				clearInterval(this.state.intervalIndex);
+
 				var index = this.state.websites.findIndex(function (element, index, array) {
 					return element.url === url;
 				});
 
 				var websites = this.state.websites;
+				var oldCategory = websites[index].category;
 				websites[index].category = category;
 				var categories = this.consolidateCategories(websites);
 
-				this.setState({ websites: websites, categories: categories });
+				index = this.state.categoriesChanged.findIndex(function (element, index, array) {
+					return element.url === url;
+				});
+
+				var categoriesChanged = this.state.categoriesChanged;
+
+				if (index === -1) {
+					categoriesChanged.push({ url: url, category: category, oldCategory: oldCategory });
+				} else {
+					categoriesChanged[index].category = category;
+				}
+
+				console.log(categoriesChanged);
+
+				this.setState({ websites: websites, categories: categories, categoriesChanged: categoriesChanged, intervalIndex: setInterval(this.updateDatabase.bind(this), 30000) });
+			}
+		}, {
+			key: 'updateDatabase',
+			value: function updateDatabase(url, category) {
+
+				console.log(this.state.categoriesChanged);
+
+				while (this.state.categoriesChanged.length > 0) {
+					var categoriesChanged = this.state.categoriesChanged;
+					var change = categoriesChanged.pop();
+					this.setState({ categoriesChanged: categoriesChanged });
+
+					var xhttp = new XMLHttpRequest();
+					console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(this.state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+					xhttp.open("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(this.state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+					xhttp.send();
+				}
 			}
 
 			//Pulls the users data from the AWS Server and loads the websites array in state
@@ -47174,13 +47211,7 @@
 		function Website_Row(props) {
 			_classCallCheck(this, Website_Row);
 
-			var _this = _possibleConstructorReturn(this, (Website_Row.__proto__ || Object.getPrototypeOf(Website_Row)).call(this, props));
-
-			_this.state = {
-				category: props.website.category,
-				categoryChanged: false
-			};
-			return _this;
+			return _possibleConstructorReturn(this, (Website_Row.__proto__ || Object.getPrototypeOf(Website_Row)).call(this, props));
 		}
 
 		_createClass(Website_Row, [{
@@ -47194,15 +47225,10 @@
 				return a.name.toLowerCase().indexOf(searchTerm.toLowerCase()) > b.name.toLowerCase().indexOf(searchTerm.toLowerCase()) ? 1 : -1;
 			}
 		}, {
-			key: 'updateDatabase',
-			value: function updateDatabase(event) {
-				if (this.state.categoryChanged) {
-					console.log("/updateCategory?url=" + this.props.website.url + "&category=" + event.target.value + "&userid=" + this.props.userid);
-					var xhttp = new XMLHttpRequest();
-					xhttp.open("GET", "/updateCategory?url=" + this.props.website.url + "&category=" + event.target.value + "&userid=" + this.props.userid);
-					xhttp.send();
-
-					this.props.updateCategory(this.props.website.url, event.target.value);
+			key: 'updateCategory',
+			value: function updateCategory(category) {
+				if (category !== this.props.website.category) {
+					this.props.updateCategory(this.props.website.url, category);
 				}
 			}
 		}, {
@@ -47248,9 +47274,9 @@
 					),
 					_react2.default.createElement(
 						'td',
-						{ onBlur: this.updateDatabase.bind(this) },
+						null,
 						_react2.default.createElement(_reactAutocomplete2.default, {
-							value: this.state.category,
+							value: this.props.website.category,
 							items: [{ name: "Entertainment: TV/Video" }, { name: "Entertainment: Social Network" }, { name: "Entertainment: Reading" }, { name: "News" }, { name: "Shopping" }, { name: "Search Engine" }, { name: "Research" }, { name: "Email" }, { name: "Entertainment: Games" }, { name: "Programming" }, { name: "Work" }, { name: "Banking" }, { name: "Pornography" }, { name: "Messaging" }, { name: "Online Dating" }, { name: "Entertainment: Sports" }, { name: "Fantasy Football" }, { name: "Music" }, { name: "School" }, { name: "Productivity" }, { name: "Errands" }],
 							getItemValue: function getItemValue(item) {
 								return item.name;
@@ -47258,10 +47284,10 @@
 							shouldItemRender: this.shouldItemRender.bind(this),
 							sortItems: this.sortItems.bind(this),
 							onChange: function onChange(event, value) {
-								return _this2.setState({ category: value, categoryChanged: true });
+								return _this2.updateCategory(value);
 							},
 							onSelect: function onSelect(value) {
-								return _this2.setState({ category: value, categoryChanged: true });
+								return _this2.updateCategory(value);
 							},
 							renderItem: function renderItem(item, isHighlighted) {
 								return _react2.default.createElement(

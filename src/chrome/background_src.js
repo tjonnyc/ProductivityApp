@@ -16,8 +16,6 @@ chrome.identity.getAuthToken({ 'interactive': true }, function(token) {
     return;
   }
 
-  console.log(token);
-
   var xhr = new XMLHttpRequest();
   xhr.open('GET', 'https://www.googleapis.com/plus/v1/people/me');
   xhr.setRequestHeader('Authorization', 'Bearer ' + token);
@@ -30,7 +28,6 @@ function requestComplete() {
   if (this.status == 401) {
     console.log("Error in requestComplete" + this.status);
   } else {
-  	console.log(this.response);
     onUserInfoFetched(null, this.status, this.response);
   }
 }
@@ -47,6 +44,7 @@ function onUserInfoFetched(error, status, response) {
 }
 
 var currentURL = "";
+var currentTime = Date.now();
 
 function continuePostUserID() {
 
@@ -101,13 +99,23 @@ function continuePostUserID() {
 		url = parseUrl(url);
 		if (url !== currentURL)
 		{
-			var currentTime = Date.now();
+			var time = Date.now();
 
-			//Hit server with a get request and pass the url and datetime and hashed userid to add to the db
+			//Add a 'private' time segment by sending the url and datetime and userid to add to the db
 			var xhttp = new XMLHttpRequest(); 
-			console.log(server + "/addTimeSegment?url=" + url + "&datetime=" + currentTime + "&userid=" + user_id);
-		  xhttp.open("GET", server + "/addTimeSegment?url=" + url + "&datetime=" + currentTime + "&userid=" + user_id);
+			console.log(server + "/addPrivateTimeSegment?url=" + url + "&datetime=" + time + "&userid=" + user_id);
+		  xhttp.open("GET", server + "/addPrivateTimeSegment?url=" + url + "&datetime=" + time + "&userid=" + user_id);
 		  xhttp.send();  
+
+		  //Increment the 'public' time spent on the current (e.g. prior) url by sending the time spent since the last url was clicked
+		  if (currentURL !== "") {
+			  var xhttp2 = new XMLHttpRequest(); 
+				console.log(server + "/incrementPublicURL?url=" + currentURL + "&timespent=" + (time - currentTime));
+			  xhttp2.open("GET", server + "/incrementPublicURL?url=" + currentURL + "&timespent=" + (time - currentTime));
+			  xhttp2.send();
+			}
+
+		  currentTime = time;
 		  currentURL = url;
 		}
 	}
@@ -118,50 +126,3 @@ function continuePostUserID() {
 	//We also need to add a script which calls updateURL each minute
 	window.setInterval(updateURL, 5000);  
 }
-/*
-//Gets tabs which are 
-
-	
-	//Add listeners which run a check on the logging state as events occur
-	chrome.tabs.onActivated.addListener(updateURL); 
-	chrome.tabs.onUpdated.addListener(updateURL); 
-	chrome.idle.onStateChanged.addListener(updateURL); 
-	chrome.tabs.onRemoved.addListener(updateURL);
-
-
-	//Called when a tab is made active (i.e. switched to by the user)
-	function activeTabChanged(activeInfo) {
-		chrome.tabs.query({ active: true}, (tabs) => {
-			if (tabs.length > 0) {
-				recordTimeSegment(tabs[0].url);
-			}
-		});
-	}
-
-	//Called when a tab is updated (i.e. when a user types in a new url)
-	function tabUpdated(tabID, changeInfo, tab) {
-		recordTimeSegment(tab.url);
-	}
-
-
-	//Called when a tab is closed
-	function tabRemoved(tabId, removeInfo) {
-		chrome.tabs.query({}, (tabs) => { if(tabs.length === 0) { recordTimeSegment("IDLE") });
-	}
-
-
-	//Called when the browser goes idle or becomes active
-	function idleStateChanged(newState) {
-		if (newState === "active") {
-			
-			//check for focus
-
-			chrome.tabs.query({ active: true}, (tabs) => recordTimeSegment(tabs[0].url));	
-		} else { //only other options are idle or locked
-			
-			//check for focus and sound
-
-			recordTimeSegment("IDLE");
-		}
-	}
-*/
