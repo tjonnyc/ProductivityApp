@@ -24,7 +24,7 @@ export default class App extends Component {
 			userid: getUrlParameter('userid'),
 			totalNumDays: 0,
 			categoriesChanged: [],
-			intervalIndex: setInterval(this.updateDatabase.bind(this), 30000)
+			intervalIndex: setInterval(this.updateDatabase.bind(this), 3000)
 		}	
 
 		this.pullData();
@@ -56,7 +56,7 @@ export default class App extends Component {
 			categoriesChanged[index].category = category;
 		}
 
-		this.setState({ websites, categories, categoriesChanged, intervalIndex: setInterval(this.updateDatabase.bind(this), 30000) });
+		this.setState({ websites, categories, categoriesChanged, intervalIndex: setInterval(this.updateDatabase.bind(this), 3000) });
 	}
 
 	updateDatabase(url, category) {		

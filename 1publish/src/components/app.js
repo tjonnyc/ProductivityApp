@@ -21,22 +21,56 @@ export default class App extends Component {
 			view: "url",
 			categories: [],
 			activeNav: {urlView: "active", categoryView: "", settingsView: ""},
-			userid: getUrlParameter('userid')
-		}
+			userid: getUrlParameter('userid'),
+			totalNumDays: 0,
+			categoriesChanged: [],
+			intervalIndex: setInterval(this.updateDatabase.bind(this), 30000)
+		}	
 
 		this.pullData();
 	}
 
 	updateCategory(url, category) {
+		
+		clearInterval(this.state.intervalIndex); 
+
 		let index = this.state.websites.findIndex(function(element, index, array) {
 			return element.url === url;
 		})
 
 		let websites = this.state.websites;
+		let oldCategory = websites[index].category;
 		websites[index].category = category;
 		let categories = this.consolidateCategories(websites);
 
-		this.setState({ websites, categories });
+		index = this.state.categoriesChanged.findIndex(function(element, index, array) {
+			return element.url === url;
+		})
+
+		let categoriesChanged = this.state.categoriesChanged;
+
+		if (index === -1) {
+			categoriesChanged.push({ url, category, oldCategory });
+		}
+		else {
+			categoriesChanged[index].category = category;
+		}
+
+		this.setState({ websites, categories, categoriesChanged, intervalIndex: setInterval(this.updateDatabase.bind(this), 30000) });
+	}
+
+	updateDatabase(url, category) {		
+
+		while (this.state.categoriesChanged.length > 0) {
+			let categoriesChanged = this.state.categoriesChanged;
+			let change = categoriesChanged.pop();
+			this.setState({ categoriesChanged });
+
+			var xhttp = new XMLHttpRequest();
+			console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(this.state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+		  xhttp.open("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(this.state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+		  xhttp.send();			
+		}
 	}
 
 	//Pulls the users data from the AWS Server and loads the websites array in state
@@ -76,6 +110,12 @@ export default class App extends Component {
 	}
 
 	consolidateTimeSegments(timeSegments) {
+
+		if (timeSegments.length > 0) {
+			var timeDiff = Math.abs(Date.now() - Number(timeSegments[0].datetime));			
+			var diffDays = Math.ceil(timeDiff / (1000 * 3600 * 24)); 			
+			this.setState({ totalNumDays: diffDays })
+		}
 		
 		return timeSegments.reduce(function(prev, curr, index, array) {
 		
@@ -167,7 +207,7 @@ export default class App extends Component {
 						<div className="col-sm-6 col-md-6 col-lg-6">
 							{chart}
 						</div>
-						<Website_Table id="displayedTable" updateCategory={this.updateCategory.bind(this)} userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+						<Website_Table id="displayedTable" updateCategory={this.updateCategory.bind(this)} totalNumDays={this.state.totalNumDays} userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
 					</div>
 				</div>
 			</div>
