@@ -51,7 +51,11 @@ app.get('/addPrivateTimeSegment', function(req, res) {
 
 	//INSERT TIMESEGMENT
 	connection.query("INSERT INTO time_segments (url, datetime, userid) VALUES (" + encrypt(req.query.url, req.query.userid) + ", " + encrypt(req.query.datetime, req.query.userid) + ", " + encrypt(req.query.userid, req.query.userid) + ");", function(err) {
-	  if (err) throw err;	 
+	  if (err) throw err;
+	  else {
+	  	res.header('Access-Control-Allow-Origin', '*');
+	  	res.send(200);
+	  }	 
 	});
 	
 	//INSERT CATEGORY
@@ -67,11 +71,19 @@ app.get('/incrementPublicURL', function(req, res) {
 		if (rows.length === 0) {
 			connection.query("INSERT INTO total_time_segments (url, time_spent) VALUES ('" + req.query.url + "', " + req.query.timespent + ");", function(err) {
 				if (err) throw err;
+				else {
+			  	res.header('Access-Control-Allow-Origin', '*');
+			  	res.send(200);
+			  }	
 			});
 		}
 		else {			
 			connection.query("UPDATE total_time_segments SET time_spent=" + (Number(rows[0].time_spent) + Number(req.query.timespent)) + " WHERE url='" + req.query.url + "';", function(err) {
 				if (err) throw err;
+				else {
+			  	res.header('Access-Control-Allow-Origin', '*');
+			  	res.send(200);
+			  }
 			});
 		}
 	});
