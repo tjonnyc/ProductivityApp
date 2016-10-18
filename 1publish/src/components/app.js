@@ -24,7 +24,7 @@ export default class App extends Component {
 			userid: getUrlParameter('userid'),
 			totalNumDays: 0,
 			categoriesChanged: [],
-			intervalIndex: setInterval(this.updateDatabase.bind(this), 30000)
+			intervalIndex: setInterval(this.updateDatabase.bind(this), 3000)
 		}	
 
 		this.pullData();
@@ -56,15 +56,16 @@ export default class App extends Component {
 			categoriesChanged[index].category = category;
 		}
 
-		this.setState({ websites, categories, categoriesChanged, intervalIndex: setInterval(this.updateDatabase.bind(this), 30000) });
+		this.setState({ websites, categories, categoriesChanged, intervalIndex: setInterval(this.updateDatabase.bind(this), 3000) });
 	}
 
 	updateDatabase(url, category) {		
 
-		while (this.state.categoriesChanged.length > 0) {
-			let categoriesChanged = this.state.categoriesChanged;
+		let categoriesChanged = this.state.categoriesChanged;		
+		this.setState({ categoriesChanged: [] });
+
+		while (categoriesChanged.length > 0) {			
 			let change = categoriesChanged.pop();
-			this.setState({ categoriesChanged });
 
 			var xhttp = new XMLHttpRequest();
 			console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(this.state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));

@@ -21614,7 +21614,7 @@
 				userid: getUrlParameter('userid'),
 				totalNumDays: 0,
 				categoriesChanged: [],
-				intervalIndex: setInterval(_this.updateDatabase.bind(_this), 30000)
+				intervalIndex: setInterval(_this.updateDatabase.bind(_this), 3000)
 			};
 
 			_this.pullData();
@@ -21648,20 +21648,17 @@
 					categoriesChanged[index].category = category;
 				}
 
-				console.log(categoriesChanged);
-
-				this.setState({ websites: websites, categories: categories, categoriesChanged: categoriesChanged, intervalIndex: setInterval(this.updateDatabase.bind(this), 30000) });
+				this.setState({ websites: websites, categories: categories, categoriesChanged: categoriesChanged, intervalIndex: setInterval(this.updateDatabase.bind(this), 3000) });
 			}
 		}, {
 			key: 'updateDatabase',
 			value: function updateDatabase(url, category) {
 
-				console.log(this.state.categoriesChanged);
+				var categoriesChanged = this.state.categoriesChanged;
+				this.setState({ categoriesChanged: [] });
 
-				while (this.state.categoriesChanged.length > 0) {
-					var categoriesChanged = this.state.categoriesChanged;
+				while (categoriesChanged.length > 0) {
 					var change = categoriesChanged.pop();
-					this.setState({ categoriesChanged: categoriesChanged });
 
 					var xhttp = new XMLHttpRequest();
 					console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(this.state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));

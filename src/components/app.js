@@ -61,10 +61,11 @@ export default class App extends Component {
 
 	updateDatabase(url, category) {		
 
-		while (this.state.categoriesChanged.length > 0) {
-			let categoriesChanged = this.state.categoriesChanged;
+		let categoriesChanged = this.state.categoriesChanged;		
+		this.setState({ categoriesChanged: [] });
+
+		while (categoriesChanged.length > 0) {			
 			let change = categoriesChanged.pop();
-			this.setState({ categoriesChanged });
 
 			var xhttp = new XMLHttpRequest();
 			console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(this.state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));

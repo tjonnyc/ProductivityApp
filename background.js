@@ -57,7 +57,7 @@
 	var devServer = "http://localhost:8081";
 	var productionServer = "http://productivityapp-dev.us-west-2.elasticbeanstalk.com";
 
-	var server = devServer;
+	var server = productionServer;
 
 	var user_id = 0;
 
