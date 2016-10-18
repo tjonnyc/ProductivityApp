@@ -27,7 +27,7 @@ var allowCrossDomain = function(req, res, next) {
     }
 };
 
-app.use(allowCrossDomain);
+//app.use(allowCrossDomain);
 
 function encrypt(value, key) {
 	return "AES_ENCRYPT('" + value + "', UNHEX(SHA2('" + key + "',512)))";
@@ -41,8 +41,12 @@ function decrypt(value, key) {
 app.get('/data', function(req, res) {
 
 	connection.query("SELECT " + decrypt("time_segments.url", req.query.userid) + " AS url, " + decrypt("datetime", req.query.userid) + " AS datetime, " + decrypt("category", req.query.userid) + " AS category FROM time_segments JOIN categories ON (time_segments.url = categories.url AND time_segments.userid = categories.userid) WHERE time_segments.userid = " + encrypt(req.query.userid, req.query.userid) + ";", function(err, rows, fields) {
-	  if (err) throw err;	   
-	  res.send(rows);
+	  if (err) throw err;
+	  else {
+	  	res.header('Access-Control-Allow-Origin', '*');
+	  	res.send(rows);
+	  }   
+	  
 	});
 });
 
@@ -51,17 +55,17 @@ app.get('/addPrivateTimeSegment', function(req, res) {
 
 	//INSERT TIMESEGMENT
 	connection.query("INSERT INTO time_segments (url, datetime, userid) VALUES (" + encrypt(req.query.url, req.query.userid) + ", " + encrypt(req.query.datetime, req.query.userid) + ", " + encrypt(req.query.userid, req.query.userid) + ");", function(err) {
-	  if (err) throw err;
-	  else {
-	  	res.header('Access-Control-Allow-Origin', '*');
-	  	res.send(200);
-	  }	 
+	  if (err) throw err;	  	 
 	});
 	
 	//INSERT CATEGORY
 	connection.query("INSERT INTO categories (url, category, userid) VALUES (" + encrypt(req.query.url, req.query.userid) + ", " + encrypt('Click to Categorize', req.query.userid) + ", " + encrypt(req.query.userid, req.query.userid) + ");", function(err) {
-	  if (err && err.code !== "ER_DUP_ENTRY") {console.log(err.code);}	 
+	  if (err && err.code !== "ER_DUP_ENTRY") {console.log(err.code);}
 	});
+
+	res.header('Access-Control-Allow-Origin', '*');
+	res.send(200);
+
 });
 
 //Increments the sent url by the sent timespent (if url doesn't currently exist in the database adds it)
@@ -71,22 +75,18 @@ app.get('/incrementPublicURL', function(req, res) {
 		if (rows.length === 0) {
 			connection.query("INSERT INTO total_time_segments (url, time_spent) VALUES ('" + req.query.url + "', " + req.query.timespent + ");", function(err) {
 				if (err) throw err;
-				else {
-			  	res.header('Access-Control-Allow-Origin', '*');
-			  	res.send(200);
-			  }	
 			});
 		}
 		else {			
 			connection.query("UPDATE total_time_segments SET time_spent=" + (Number(rows[0].time_spent) + Number(req.query.timespent)) + " WHERE url='" + req.query.url + "';", function(err) {
 				if (err) throw err;
-				else {
-			  	res.header('Access-Control-Allow-Origin', '*');
-			  	res.send(200);
-			  }
 			});
 		}
 	});
+
+	res.header('Access-Control-Allow-Origin', '*');
+	res.send(200);
+
 });
 
 //updates the category of the url in the users private table and ajusts the votes in the public table
@@ -109,7 +109,7 @@ app.get('/updateCategory', function(req, res) {
 
 		//Updates the category of the private url
 		connection.query("UPDATE categories SET category=" + encrypt(req.query.newCategory, req.query.userid) + " WHERE url=" + encrypt(req.query.url, req.query.userid) + " AND userid=" + encrypt(req.query.userid, req.query.userid) + ";", function(err) {
-		  if (err) throw err;	 
+		  if (err) throw err;
 		});
 
 		//UPDATE TOTAL_CATEGORIES - NEW CATEGORY
@@ -118,7 +118,7 @@ app.get('/updateCategory', function(req, res) {
 				if (rows.length === 0) {
 					console.log("INSERT INTO total_categories (url, category, votes) VALUES ('" + req.query.url + "', '" + req.query.newCategory + "', 1);");
 					connection.query("INSERT INTO total_categories (url, category, votes) VALUES ('" + req.query.url + "', '" + req.query.newCategory + "', 1);", function(err) {
-						if (err) throw err;
+						if (err) throw err;						
 					});
 				}
 				else {
@@ -141,6 +141,9 @@ app.get('/updateCategory', function(req, res) {
 			});
 		}
 	}
+
+	res.header('Access-Control-Allow-Origin', '*');
+	res.send(200);
 
 });
 
