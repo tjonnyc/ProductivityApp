@@ -14,6 +14,7 @@ class Container extends Component {
 	constructor(props) {
 		super(props);
 		this.pullData();		
+		setInterval(this.props.updateCategoryInDatabase, 20000);
 	}
 
 	//Pulls the users data from the AWS Server and loads the websites array in state

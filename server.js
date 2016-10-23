@@ -126,7 +126,7 @@ app.get('/updateCategory', function(req, res) {
 	}
 
 	res.header('Access-Control-Allow-Origin', '*');
-	res.send(200);
+	res.sendStatus(200);
 });
 
 app.listen(8081, function () {

@@ -27213,7 +27213,7 @@
 			var _this = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
 			_this.pullData();
-			setInterval(_this.props.updateCategoryInDatabase(), 20000);
+			setInterval(_this.props.updateCategoryInDatabase, 20000);
 			return _this;
 		}
 
@@ -54889,13 +54889,13 @@
 	  return { websites: websites, categories: categories, categoriesChanged: categoriesChanged, recentChange: true };
 	}
 
-	function sendCategoryUpdates(categoriesChanged) {
+	function sendCategoryUpdates(categoriesChanged, userid) {
 	  while (categoriesChanged.length > 0) {
 	    var change = categoriesChanged.pop();
 
 	    var xhttp = new XMLHttpRequest();
-	    console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
-	    xhttp.open("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(state.userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+	    console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+	    xhttp.open("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
 	    xhttp.send();
 	  }
 	}
@@ -54908,20 +54908,8 @@
 	  } else {
 	    console.log("recent change is false");
 	    var categoriesChanged = state.categoriesChanged;
-	    setTimeout(sendCategoryUpdates(categoriesChanged), 0);
+	    setTimeout(sendCategoryUpdates(categoriesChanged, state.userid), 0);
 	    return { categoriesChanged: [] };
-	  }
-	}
-
-	function changeView(newView) {
-	  if (newView === "URL View") {
-	    return { activeNav: { urlView: "active", categoryView: "", settingsView: "" } };
-	  } else if (newView === "Category View") {
-	    return { activeNav: { urlView: "", categoryView: "active", settingsView: "" } };
-	  } else if (newView === "Settings") {
-	    return { activeNav: { urlView: "", categoryView: "", settingsView: "active" } };
-	  } else {
-	    console.log("Error in Change View in Main Reducer");
 	  }
 	}
 
@@ -54940,9 +54928,6 @@
 	    case 'UPDATE_CATEGORY_IN_DATABASE':
 	      console.log("reducer function called");
 	      return Object.assign({}, state, updateCategoryInDatabase(state));
-	      break;
-	    case 'CHANGE_VIEW':
-	      return Object.assign({}, state, changeView(action.newView));
 	      break;
 	    default:
 	      return state;

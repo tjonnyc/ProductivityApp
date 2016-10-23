@@ -8,8 +8,7 @@ import Website_Table from './website_table.js';
 export default class UrlCategoryView extends Component {
 
 	constructor(props) {
-		super(props);
-		setInterval(this.props.updateCategoryInDatabase(), 20000);
+		super(props);		
 	}
 
 	generateChartData() {		
