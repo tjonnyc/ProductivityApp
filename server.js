@@ -14,21 +14,6 @@ connection.connect();
 
 app.use(express.static('public'));
 
-var allowCrossDomain = function(req, res, next) {
-		console.log(req.method);
-    if ('OPTIONS' == req.method) {
-      res.header('Access-Control-Allow-Origin', '*');
-      res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,PATCH,OPTIONS');
-      res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, Content-Length, X-Requested-With');
-      res.send(200);
-    }
-    else {
-      next();
-    }
-};
-
-//app.use(allowCrossDomain);
-
 function encrypt(value, key) {
 	return "AES_ENCRYPT('" + value + "', UNHEX(SHA2('" + key + "',512)))";
 }
@@ -65,7 +50,6 @@ app.get('/addPrivateTimeSegment', function(req, res) {
 
 	res.header('Access-Control-Allow-Origin', '*');
 	res.send(200);
-
 });
 
 //Increments the sent url by the sent timespent (if url doesn't currently exist in the database adds it)
@@ -86,7 +70,6 @@ app.get('/incrementPublicURL', function(req, res) {
 
 	res.header('Access-Control-Allow-Origin', '*');
 	res.send(200);
-
 });
 
 //updates the category of the url in the users private table and ajusts the votes in the public table
@@ -144,7 +127,6 @@ app.get('/updateCategory', function(req, res) {
 
 	res.header('Access-Control-Allow-Origin', '*');
 	res.send(200);
-
 });
 
 app.listen(8081, function () {

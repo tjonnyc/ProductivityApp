@@ -1,10 +1,18 @@
+//import libraries
 import React, { Component } from 'react';
 import Chart from 'chart.js';
 import parseUrl from './parseUrl_helper';
 import Website_Table from './website_table.js';
 import {Doughnut} from 'react-chartjs-2';
+import { Router, Route, Link, IndexRoute, hashHistory, browserHistory } from 'react-router'
 
-export default class App extends Component {
+//import components
+
+//import actions
+import { getWebsites } from '../actions/index.js';
+import { bindActionCreators } from 'redux';
+
+class UrlCategoryView extends Component {
 
 	constructor(props) {
 		super(props);
@@ -203,15 +211,36 @@ export default class App extends Component {
 				    </ul>
 				  </div>
 				</nav>
+				<Router history={hashHistory}>
+	        <Route path='/' component={Container}>
+	          <IndexRoute component={Home} />
+	          <Route path='/address' component={Address} />
+	          <Route path='*' component={NotFound} />
+	        </Route>
+     	 </Router>
 				<div className="container-fluid">
 					<div className="row">						
 						<div className="col-sm-6 col-md-6 col-lg-6">
 							{chart}
 						</div>
-						<Website_Table id="displayedTable" updateCategory={this.updateCategory.bind(this)} totalNumDays={this.state.totalNumDays} userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+						<div>
+							<Website_Table id="displayedTable" updateCategory={this.updateCategory.bind(this)} totalNumDays={this.state.totalNumDays} userid={this.state.userid} websites={this.state.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;})} />
+						</div>
 					</div>
 				</div>
 			</div>
 		);
 	}
 }
+
+function mapStateToProps(state) {
+	return {
+		websites: state.websites
+	}
+}
+
+function mapDispatchToProps(dispatch) {
+	return bindActionCreators({ websites: getWebsites }, dispatch);
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(UrlCategoryView);

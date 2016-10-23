@@ -1,3 +1,4 @@
+//Import Libraries
 import React, { Component } from 'react';
 import Autocomplete from 'react-autocomplete';
 
@@ -16,12 +17,6 @@ export default class Website_Row extends Component {
     	a.name.toLowerCase().indexOf(searchTerm.toLowerCase()) >
     	b.name.toLowerCase().indexOf(searchTerm.toLowerCase()) ? 1 : -1
   	)
-	}
-
-	updateCategory(category) {
-		if (category !== this.props.website.category) {
-		  this.props.updateCategory(this.props.website.url, category);
-		}
 	}
 
 	render() {
@@ -78,8 +73,8 @@ export default class Website_Row extends Component {
 	          getItemValue={(item) => item.name}
 	          shouldItemRender={this.shouldItemRender.bind(this)}
 	          sortItems={this.sortItems.bind(this)}
-	          onChange={(event, value) => this.updateCategory(value)}
-	          onSelect={value => this.updateCategory(value)}
+	          onChange={(event, value) => this.props.updateCategory(this.props.website.url, value)}
+	          onSelect={value => this.props.updateCategory(this.props.website.url, value)}
 	          renderItem={(item, isHighlighted) => (
 	            <div
 	              style={isHighlighted ? styles.highlightedItem : styles.item}

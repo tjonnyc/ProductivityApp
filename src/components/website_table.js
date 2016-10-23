@@ -1,4 +1,7 @@
+//Import Libraries
 import React, { Component } from 'react';
+
+//Import Components
 import Website_Row from './website_row.js';
 
 export default class Website_Table extends Component {
@@ -8,15 +11,10 @@ export default class Website_Table extends Component {
 	}	
 
 	render() {
-
 		let props = this.props;
 
-		let totalTime = this.props.websites.reduce(function(prev, curr, index, array) {
-			return prev + curr.timeElapsed;
-		}, 0);
-
-		const Rows = this.props.websites.map(function(website, index) {
-			return <Website_Row key={index} index={index} userid={props.userid} website={website} totalNumDays={props.totalNumDays} totalTime={totalTime} updateCategory={props.updateCategory.bind(this)} />;
+		const Rows = this.props.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;}).map(function(website, index) {
+			return <Website_Row key={index} index={index} website={website} updateCategory={props.updateCategory} totalTime={props.totalTime} totalNumDays={props.totalNumDays} userid={props.userid} />;
 		});
 
 		return (
