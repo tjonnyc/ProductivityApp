@@ -18,11 +18,16 @@ function getUrlParameter(name) {
 const INITIAL_STATE = {
 	main: {
 		totalNumDays: 0, //initialized by Pull Data action on app.js mount
-		totalTime: 0, //ibid
-		websites: [], //ibid
-		categories: [], //ibid
+		totalTime: 0, 
+		totalPublicTime: 0,
+		websites: [], 
+		publicWebsites: [],
+		categories: [], 
+		publicCategories: [],
 		userid: getUrlParameter('userid'),	
 		categoriesChanged: [],
+		urlsExcluded: [],
+		urlsRemoved: [],
 		recentChange: false,	
 	}
 };

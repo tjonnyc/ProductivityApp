@@ -19,6 +19,16 @@ export default class Website_Row extends Component {
   	)
 	}
 
+	excludeURL(event) {
+		event.preventDefault();
+		this.props.excludeURL(this.props.website.url, String(this.props.type === "Exclude"));
+	}
+
+	removeURL(event) {
+		event.preventDefault();
+		this.props.removeURL(this.props.website.url);
+	}
+
 	render() {
 
 		let styles = {
@@ -37,6 +47,15 @@ export default class Website_Row extends Component {
 		  menu: {
 		    border: 'solid 1px #ccc'
 		  }
+		}
+
+		let excludeButton;
+		let removeButton;
+		if (this.props.type === "Exclude") {
+			excludeButton = ( <td><button type="button" onClick={this.excludeURL.bind(this)} className="btn btn-warning">Exclude</button></td> )
+		} else if (this.props.type === "Remove") {
+			excludeButton = ( <td><button type="button" onClick={this.excludeURL.bind(this)} className="btn btn-info">Include</button></td> )
+			removeButton = ( <td><button type="button" onClick={this.removeURL.bind(this)} className="btn btn-danger">Delete</button></td> )
 		}
 
 		return (
@@ -83,6 +102,8 @@ export default class Website_Row extends Component {
 	          )}
         	/>
 				</td>
+				{ excludeButton }
+				{ removeButton }
     	</tr>
 		);
 	}

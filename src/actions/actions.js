@@ -1,9 +1,17 @@
 let actions = {
 	
-	addDataFromServer(data) {
+	pullDataFromServer(privateData, publicData) {
 		return {
-			type: 'ADD_DATA_FROM_SERVER',
-			data
+			type: 'PULL_DATA_FROM_SERVER',
+			privateData,
+			publicData
+		}
+	},
+
+	updateDatabase() {
+		console.log("Action Called");
+		return {
+			type: 'UPDATE_DATABASE'
 		}
 	},
 
@@ -15,10 +23,18 @@ let actions = {
 		}
 	},
 
-	updateCategoryInDatabase() {
-		console.log("Action Called");
+	excludeURL(url, exclude) {
 		return {
-			type: 'UPDATE_CATEGORY_IN_DATABASE'
+			type: 'EXCLUDE_URL',
+			url,
+			exclude
+		}
+	},
+
+	removeURL(url) {
+		return {
+			type: 'REMOVE_URL',
+			url
 		}
 	},
 

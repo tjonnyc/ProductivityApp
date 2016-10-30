@@ -93,7 +93,7 @@
 	      _react2.default.createElement(_reactRouter.Route, { path: '*', component: _urlcategoryview2.default })
 	    )
 	  )
-	), document.querySelector('.container'));
+	), document.querySelector('.app'));
 
 	//Import Store
 
@@ -27213,7 +27213,7 @@
 			var _this = _possibleConstructorReturn(this, (Container.__proto__ || Object.getPrototypeOf(Container)).call(this, props));
 
 			_this.pullData();
-			setInterval(_this.props.updateCategoryInDatabase, 20000);
+			setInterval(_this.props.updateDatabase, 5000);
 			return _this;
 		}
 
@@ -27223,17 +27223,28 @@
 		_createClass(Container, [{
 			key: 'pullData',
 			value: function pullData() {
-				var rawData = [];
+				var privateRawData = [];
+				var publicRawData = [];
 				var props = this.props;
 
 				var xhttp = new XMLHttpRequest();
 				xhttp.onreadystatechange = function () {
 					if (xhttp.readyState == 4 && xhttp.status == 200) {
-						rawData = JSON.parse(xhttp.responseText);
-						props.addDataFromServer(rawData);
+						var publicXhttp = new XMLHttpRequest();
+
+						publicXhttp.onreadystatechange = function () {
+							if (publicXhttp.readyState == 4 && publicXhttp.status == 200) {
+								privateRawData = JSON.parse(xhttp.responseText);
+								publicRawData = JSON.parse(publicXhttp.responseText);
+
+								props.pullDataFromServer(privateRawData, publicRawData);
+							}
+						};
+						publicXhttp.open("GET", "/pullPublicData");
+						publicXhttp.send();
 					}
 				};
-				xhttp.open("GET", "/data?userid=" + this.props.main.userid, true);
+				xhttp.open("GET", "/pullPrivateData?userid=" + this.props.main.userid);
 				xhttp.send();
 			}
 		}, {
@@ -27241,7 +27252,7 @@
 			value: function render() {
 				return _react2.default.createElement(
 					'div',
-					null,
+					{ className: 'container-fluid' },
 					_react2.default.createElement(_nav2.default, { activeNav: this.props.main.activeNav, changeView: this.props.changeView }),
 					_react2.default.cloneElement(this.props.children, this.props)
 				);
@@ -27271,10 +27282,17 @@
 		value: true
 	});
 	var actions = {
-		addDataFromServer: function addDataFromServer(data) {
+		pullDataFromServer: function pullDataFromServer(privateData, publicData) {
 			return {
-				type: 'ADD_DATA_FROM_SERVER',
-				data: data
+				type: 'PULL_DATA_FROM_SERVER',
+				privateData: privateData,
+				publicData: publicData
+			};
+		},
+		updateDatabase: function updateDatabase() {
+			console.log("Action Called");
+			return {
+				type: 'UPDATE_DATABASE'
 			};
 		},
 		updateCategory: function updateCategory(url, value) {
@@ -27284,10 +27302,17 @@
 				value: value
 			};
 		},
-		updateCategoryInDatabase: function updateCategoryInDatabase() {
-			console.log("Action Called");
+		excludeURL: function excludeURL(url, exclude) {
 			return {
-				type: 'UPDATE_CATEGORY_IN_DATABASE'
+				type: 'EXCLUDE_URL',
+				url: url,
+				exclude: exclude
+			};
+		},
+		removeURL: function removeURL(url) {
+			return {
+				type: 'REMOVE_URL',
+				url: url
 			};
 		}
 	};
@@ -27451,13 +27476,18 @@
 		}
 
 		_createClass(UrlCategoryView, [{
-			key: 'generateChartData',
-			value: function generateChartData() {
+			key: 'returnNotExluded',
+			value: function returnNotExluded(website) {
+				return !(website.exclude === "true");
+			}
+		}, {
+			key: 'generatePersonalChartData',
+			value: function generatePersonalChartData() {
 
 				var presentation = [];
 
 				if (this.props.location.pathname === "/") {
-					presentation = this.props.main.websites.slice(0).sort(function (a, b) {
+					presentation = this.props.main.websites.slice(0).filter(this.returnNotExluded).sort(function (a, b) {
 						return b.timeElapsed - a.timeElapsed;
 					}).slice(0, 8);
 				} else if (this.props.location.pathname === "/category") {
@@ -27482,14 +27512,53 @@
 				}
 			}
 		}, {
+			key: 'generatePublicChartData',
+			value: function generatePublicChartData() {
+
+				var presentation = [];
+
+				if (this.props.location.pathname === "/") {
+					presentation = this.props.main.publicWebsites.slice(0).filter(this.returnNotExluded).sort(function (a, b) {
+						return b.timeElapsed - a.timeElapsed;
+					}).slice(0, 8);
+				} else if (this.props.location.pathname === "/category") {
+					presentation = this.props.main.publicCategories.slice(0).sort(function (a, b) {
+						return b.timeElapsed - a.timeElapsed;
+					}).slice(0, 8);
+				}
+
+				if (presentation.length) {
+					return {
+						labels: presentation.map(function (item) {
+							return item.url;
+						}),
+						datasets: [{
+							label: 'Avg # of Minutes per Day',
+							data: presentation.map(function (item) {
+								return item.timeElapsed;
+							}),
+							backgroundColor: ['rgba(114, 147, 203, 1)', 'rgba(225, 151, 76, 1)', 'rgba(132, 186, 91, 1)', 'rgba(211, 94, 96, 1)', 'rgba(128, 133, 133, 1)', 'rgba(144, 103, 167, 1)', 'rgba(171, 104, 87, 1)', 'rgba(204, 194, 16, 1)']
+						}]
+					};
+				}
+			}
+		}, {
 			key: 'render',
 			value: function render() {
-				var chart;
+				var personalChart;
 				if (this.props.main.websites.length) {
-					chart = _react2.default.createElement(_reactChartjs.Doughnut, { id: 'myChart', data: this.generateChartData(), height: 400 });
+					personalChart = _react2.default.createElement(_reactChartjs.Doughnut, { id: 'myChart', data: this.generatePersonalChartData(), height: 400 });
 				} else {
-					chart = "Loading...";
+					personalChart = "Loading...";
 				}
+
+				var publicChart;
+				if (this.props.main.publicWebsites.length) {
+					publicChart = _react2.default.createElement(_reactChartjs.Doughnut, { id: 'myChart', data: this.generatePublicChartData(), height: 400 });
+				} else {
+					publicChart = "Loading...";
+				}
+
 				return _react2.default.createElement(
 					'div',
 					null,
@@ -27502,12 +27571,35 @@
 							_react2.default.createElement(
 								'div',
 								{ className: 'col-sm-6 col-md-6 col-lg-6' },
-								chart
+								_react2.default.createElement(
+									'div',
+									{ className: 'row' },
+									_react2.default.createElement(
+										'div',
+										{ className: 'col-sm-6 col-md-6 col-lg-6' },
+										_react2.default.createElement(
+											'h4',
+											null,
+											'Where you spend time on the internet'
+										),
+										personalChart
+									),
+									_react2.default.createElement(
+										'div',
+										{ className: 'col-sm-6 col-md-6 col-lg-6' },
+										_react2.default.createElement(
+											'h4',
+											null,
+											'Where the average person spends time on the internet'
+										),
+										publicChart
+									)
+								)
 							),
 							_react2.default.createElement(
 								'div',
-								null,
-								_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites })
+								{ className: 'col-sm-6 col-md-6 col-lg-6' },
+								_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.filter(this.returnNotExluded) })
 							)
 						)
 					)
@@ -53171,8 +53263,101 @@
 				var Rows = this.props.websites.slice(0).sort(function (a, b) {
 					return b.timeElapsed - a.timeElapsed;
 				}).map(function (website, index) {
-					return _react2.default.createElement(_website_row2.default, { key: index, index: index, website: website, updateCategory: props.updateCategory, totalTime: props.totalTime, totalNumDays: props.totalNumDays, userid: props.userid });
+					return _react2.default.createElement(_website_row2.default, { key: index, index: index, website: website, updateCategory: props.updateCategory, totalTime: props.totalTime, totalNumDays: props.totalNumDays, userid: props.userid, type: props.type, excludeURL: props.excludeURL, removeURL: props.removeURL });
 				});
+
+				var header = void 0;
+				if (this.props.type === "Exclude") {
+					header = _react2.default.createElement(
+						'tr',
+						null,
+						_react2.default.createElement(
+							'th',
+							null,
+							'Website'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'% of Time Spent'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'Min Per Day'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'Category'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'Exclude'
+						)
+					);
+				} else if (this.props.type === "Remove") {
+					header = _react2.default.createElement(
+						'tr',
+						null,
+						_react2.default.createElement(
+							'th',
+							null,
+							'Website'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'% of Time Spent'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'Min Per Day'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'Category'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'Include'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'Permanently Remove'
+						)
+					);
+				} else {
+					header = _react2.default.createElement(
+						'tr',
+						null,
+						_react2.default.createElement(
+							'th',
+							null,
+							'Website'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'% of Time Spent'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'Min Per Day'
+						),
+						_react2.default.createElement(
+							'th',
+							null,
+							'Category'
+						)
+					);
+				}
 
 				return _react2.default.createElement(
 					'section',
@@ -53183,30 +53368,7 @@
 						_react2.default.createElement(
 							'thead',
 							null,
-							_react2.default.createElement(
-								'tr',
-								null,
-								_react2.default.createElement(
-									'th',
-									null,
-									'Website'
-								),
-								_react2.default.createElement(
-									'th',
-									null,
-									'% of Time Spent'
-								),
-								_react2.default.createElement(
-									'th',
-									null,
-									'Min Per Day'
-								),
-								_react2.default.createElement(
-									'th',
-									null,
-									'Category'
-								)
-							)
+							header
 						),
 						_react2.default.createElement(
 							'tbody',
@@ -53272,6 +53434,18 @@
 				return a.name.toLowerCase().indexOf(searchTerm.toLowerCase()) > b.name.toLowerCase().indexOf(searchTerm.toLowerCase()) ? 1 : -1;
 			}
 		}, {
+			key: 'excludeURL',
+			value: function excludeURL(event) {
+				event.preventDefault();
+				this.props.excludeURL(this.props.website.url, String(this.props.type === "Exclude"));
+			}
+		}, {
+			key: 'removeURL',
+			value: function removeURL(event) {
+				event.preventDefault();
+				this.props.removeURL(this.props.website.url);
+			}
+		}, {
 			key: 'render',
 			value: function render() {
 				var _this2 = this;
@@ -53293,6 +53467,39 @@
 						border: 'solid 1px #ccc'
 					}
 				};
+
+				var excludeButton = void 0;
+				var removeButton = void 0;
+				if (this.props.type === "Exclude") {
+					excludeButton = _react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(
+							'button',
+							{ type: 'button', onClick: this.excludeURL.bind(this), className: 'btn btn-warning' },
+							'Exclude'
+						)
+					);
+				} else if (this.props.type === "Remove") {
+					excludeButton = _react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(
+							'button',
+							{ type: 'button', onClick: this.excludeURL.bind(this), className: 'btn btn-info' },
+							'Include'
+						)
+					);
+					removeButton = _react2.default.createElement(
+						'td',
+						null,
+						_react2.default.createElement(
+							'button',
+							{ type: 'button', onClick: this.removeURL.bind(this), className: 'btn btn-danger' },
+							'Delete'
+						)
+					);
+				}
 
 				return _react2.default.createElement(
 					'tr',
@@ -53340,7 +53547,9 @@
 								);
 							}
 						})
-					)
+					),
+					excludeButton,
+					removeButton
 				);
 			}
 		}]);
@@ -54350,13 +54559,55 @@
 		}
 
 		_createClass(Settings, [{
+			key: 'returnNotExluded',
+			value: function returnNotExluded(website) {
+				return !(website.exclude === "true");
+			}
+		}, {
+			key: 'returnExluded',
+			value: function returnExluded(website) {
+				return website.exclude === "true";
+			}
+		}, {
 			key: 'render',
 			value: function render() {
 
 				return _react2.default.createElement(
 					'div',
-					null,
-					'Table'
+					{ className: 'row' },
+					_react2.default.createElement(
+						'div',
+						{ className: 'row' },
+						_react2.default.createElement(
+							'div',
+							{ className: 'col-lg-12' },
+							'Normal Settings'
+						)
+					),
+					_react2.default.createElement(
+						'div',
+						{ className: 'row' },
+						_react2.default.createElement(
+							'div',
+							{ className: 'col-lg-6' },
+							_react2.default.createElement(
+								'h3',
+								null,
+								'Exclude Items?'
+							),
+							_react2.default.createElement(_website_table2.default, { id: 'displayedTable', totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.filter(this.returnNotExluded), excludeURL: this.props.excludeURL, removeURL: this.props.removeURL, type: "Exclude" })
+						),
+						_react2.default.createElement(
+							'div',
+							{ className: 'col-lg-6' },
+							_react2.default.createElement(
+								'h3',
+								null,
+								'Excluded Items: Permanently Remove Items?'
+							),
+							_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.filter(this.returnExluded), excludeURL: this.props.excludeURL, removeURL: this.props.removeURL, type: "Remove" })
+						)
+					)
 				);
 			}
 		}]);
@@ -54405,11 +54656,16 @@
 	var INITIAL_STATE = {
 		main: {
 			totalNumDays: 0, //initialized by Pull Data action on app.js mount
-			totalTime: 0, //ibid
-			websites: [], //ibid
-			categories: [], //ibid
+			totalTime: 0,
+			totalPublicTime: 0,
+			websites: [],
+			publicWebsites: [],
+			categories: [],
+			publicCategories: [],
 			userid: getUrlParameter('userid'),
 			categoriesChanged: [],
+			urlsExcluded: [],
+			urlsRemoved: [],
 			recentChange: false
 		}
 	};
@@ -54798,13 +55054,18 @@
 
 	//Pulls the users data from the AWS Server and loads the websites array in state
 	//Import Libraries
-	function addData(rawData) {
-	  console.log("Add Data Called");
-	  var totalNumDays = calculateTotalNumDays(rawData);
-	  var websites = consolidateTimeSegments(rawData);
+	function pullData(privateData, publicData) {
+	  //private data
+	  var totalNumDays = calculateTotalNumDays(privateData);
+	  var websites = consolidateTimeSegments(privateData);
 	  var totalTime = calculateTotalTime(websites);
 	  var categories = consolidateCategories(websites);
-	  return { totalNumDays: totalNumDays, totalTime: totalTime, websites: websites, categories: categories };
+
+	  //public data
+	  var publicWebsites = consolidateTimeSegments(publicData);
+	  var totalPublicTime = calculateTotalTime(publicWebsites);
+	  var publicCategories = consolidateCategories(publicWebsites);
+	  return { totalNumDays: totalNumDays, totalTime: totalTime, websites: websites, categories: categories, publicWebsites: publicWebsites, publicCategories: publicCategories, totalPublicTime: totalPublicTime };
 	}
 
 	function calculateTotalNumDays(timeSegments) {
@@ -54824,14 +55085,18 @@
 	function consolidateCategories(websites) {
 
 	  return websites.reduce(function (prev, curr, index, array) {
-	    var existingCategoryIndex = prev.findIndex(function (item) {
-	      return item.category === curr.category;
-	    });
 
-	    if (existingCategoryIndex === -1) {
-	      prev.push({ url: curr.category, timeElapsed: curr.timeElapsed, category: curr.category });
-	    } else {
-	      prev[existingCategoryIndex].timeElapsed += curr.timeElapsed;
+	    if (!(curr.exclude === "true")) {
+
+	      var existingCategoryIndex = prev.findIndex(function (item) {
+	        return item.category === curr.category;
+	      });
+
+	      if (existingCategoryIndex === -1) {
+	        prev.push({ url: curr.category, timeElapsed: curr.timeElapsed, category: curr.category });
+	      } else {
+	        prev[existingCategoryIndex].timeElapsed += curr.timeElapsed;
+	      }
 	    }
 
 	    return prev;
@@ -54843,24 +55108,77 @@
 	  return timeSegments.reduce(function (prev, curr, index, array) {
 
 	    if (curr.url !== "IDLE") {
-	      var timeElapsed = 0;
-	      if (index !== array.length - 1) {
-	        timeElapsed = array[index + 1].datetime - curr.datetime;
-	      }
-
 	      var existingURLIndex = prev.findIndex(function (item) {
 	        return item.url === curr.url;
 	      });
 
+	      if (curr.up_votes && curr.down_votes && curr.up_votes > curr.down_votes) {
+	        curr.exclude = "true";
+	      }
+
 	      if (existingURLIndex === -1) {
-	        prev.push({ url: curr.url, timeElapsed: timeElapsed, category: curr.category });
+	        prev.push({ url: curr.url, timeElapsed: Number(curr.timespent), category: curr.category || "Uncategorized", exclude: curr.exclude || "false" });
 	      } else {
-	        prev[existingURLIndex].timeElapsed += timeElapsed;
+	        prev[existingURLIndex].timeElapsed += Number(curr.timespent);
 	      }
 	    }
 
 	    return prev;
 	  }, []);
+	}
+
+	function updateDatabase(state) {
+
+	  if (state.recentChange) {
+	    return { recentChange: false };
+	  } else {
+	    if (state.categoriesChanged.length > 0) {
+	      var categoriesChanged = state.categoriesChanged;
+	      setTimeout(sendCategoryUpdates(categoriesChanged, state.userid), 0);
+	    }
+	    if (state.urlsExcluded.length > 0) {
+	      var urlsExcluded = state.urlsExcluded;
+	      setTimeout(sendExcludeUpdates(urlsExcluded, state.userid), 0);
+	    }
+	    if (state.urlsRemoved.length > 0) {
+	      var urlsRemoved = state.urlsRemoved;
+	      setTimeout(sendRemoveUpdates(urlsRemoved, state.userid), 0);
+	    }
+	    return { categoriesChanged: [], urlsExcluded: [], urlsRemoved: [] };
+	  }
+	}
+
+	function sendCategoryUpdates(categoriesChanged, userid) {
+	  while (categoriesChanged.length > 0) {
+	    var change = categoriesChanged.pop();
+
+	    var xhttp = new XMLHttpRequest();
+	    console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+	    xhttp.open("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
+	    xhttp.send();
+	  }
+	}
+
+	function sendExcludeUpdates(urlsExcluded, userid) {
+	  while (urlsExcluded.length > 0) {
+	    var change = urlsExcluded.pop();
+
+	    var xhttp = new XMLHttpRequest();
+	    console.log("GET", "/excludeUrl?url=" + encodeURIComponent(change.url) + "&userid=" + encodeURIComponent(userid) + "&exclude=" + encodeURIComponent(change.exclude));
+	    xhttp.open("GET", "/excludeUrl?url=" + encodeURIComponent(change.url) + "&userid=" + encodeURIComponent(userid) + "&exclude=" + encodeURIComponent(change.exclude));;
+	    xhttp.send();
+	  }
+	}
+
+	function sendRemoveUpdates(urlsRemoved, userid) {
+	  while (urlsRemoved.length > 0) {
+	    var change = urlsRemoved.pop();
+
+	    var xhttp = new XMLHttpRequest();
+	    console.log("GET", "/removeURL?url=" + encodeURIComponent(change.url) + "&userid=" + encodeURIComponent(userid));
+	    xhttp.open("GET", "/removeURL?url=" + encodeURIComponent(change.url) + "&userid=" + encodeURIComponent(userid));
+	    xhttp.send();
+	  }
 	}
 
 	function updateCategory(state, url, category) {
@@ -54889,28 +55207,45 @@
 	  return { websites: websites, categories: categories, categoriesChanged: categoriesChanged, recentChange: true };
 	}
 
-	function sendCategoryUpdates(categoriesChanged, userid) {
-	  while (categoriesChanged.length > 0) {
-	    var change = categoriesChanged.pop();
+	function excludeUrl(state, url, exclude) {
 
-	    var xhttp = new XMLHttpRequest();
-	    console.log("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
-	    xhttp.open("GET", "/updateCategory?url=" + encodeURIComponent(change.url) + "&newCategory=" + encodeURIComponent(change.category) + "&userid=" + encodeURIComponent(userid) + "&oldCategory=" + encodeURIComponent(change.oldCategory));
-	    xhttp.send();
+	  var index = state.websites.findIndex(function (element, index, array) {
+	    return element.url === url;
+	  });
+
+	  var websites = state.websites;
+	  websites[index].exclude = exclude;
+	  var categories = consolidateCategories(websites);
+
+	  var urlsExcluded = state.urlsExcluded;
+
+	  index = urlsExcluded.findIndex(function (element, index, array) {
+	    return element.url === url;
+	  });
+
+	  if (index === -1) {
+	    urlsExcluded.push({ url: url, exclude: exclude });
+	  } else {
+	    urlsExcluded[index].exclude = exclude;
 	  }
+
+	  return { websites: websites, categories: categories, urlsExcluded: urlsExcluded, recentChange: true };
 	}
 
-	function updateCategoryInDatabase(state) {
-	  console.log("inner function called");
-	  if (state.recentChange) {
-	    console.log("recent change true");
-	    return { recentChange: false };
-	  } else {
-	    console.log("recent change is false");
-	    var categoriesChanged = state.categoriesChanged;
-	    setTimeout(sendCategoryUpdates(categoriesChanged, state.userid), 0);
-	    return { categoriesChanged: [] };
-	  }
+	function removeUrl(state, url) {
+
+	  var index = state.websites.findIndex(function (element, index, array) {
+	    return element.url === url;
+	  });
+
+	  var websites = state.websites;
+	  websites.splice(index, 1);
+	  var categories = consolidateCategories(websites);
+
+	  var urlsRemoved = state.urlsRemoved;
+	  urlsRemoved.push({ url: url });
+
+	  return { websites: websites, categories: categories, urlsRemoved: urlsRemoved, recentChange: true };
 	}
 
 	function main() {
@@ -54919,15 +55254,20 @@
 
 	  console.log(state, action);
 	  switch (action.type) {
-	    case 'ADD_DATA_FROM_SERVER':
-	      return Object.assign({}, state, addData(action.data));
+	    case 'PULL_DATA_FROM_SERVER':
+	      return Object.assign({}, state, pullData(action.privateData, action.publicData));
+	      break;
+	    case 'UPDATE_DATABASE':
+	      return Object.assign({}, state, updateDatabase(state));
 	      break;
 	    case 'UPDATE_CATEGORY':
 	      return Object.assign({}, state, updateCategory(state, action.url, action.value));
 	      break;
-	    case 'UPDATE_CATEGORY_IN_DATABASE':
-	      console.log("reducer function called");
-	      return Object.assign({}, state, updateCategoryInDatabase(state));
+	    case 'EXCLUDE_URL':
+	      return Object.assign({}, state, excludeUrl(state, action.url, action.exclude));
+	      break;
+	    case 'REMOVE_URL':
+	      return Object.assign({}, state, removeUrl(state, action.url));
 	      break;
 	    default:
 	      return state;

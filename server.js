@@ -23,9 +23,9 @@ function decrypt(value, key) {
 }
 
 //pull all time segment data from the server and pass back as a JSON object called response with an array element called timeSegments
-app.get('/data', function(req, res) {
+app.get('/pullPrivateData', function(req, res) {
 
-	connection.query("SELECT " + decrypt("time_segments.url", req.query.userid) + " AS url, " + decrypt("datetime", req.query.userid) + " AS datetime, " + decrypt("category", req.query.userid) + " AS category FROM time_segments JOIN categories ON (time_segments.url = categories.url AND time_segments.userid = categories.userid) WHERE time_segments.userid = " + encrypt(req.query.userid, req.query.userid) + ";", function(err, rows, fields) {
+	connection.query("SELECT " + decrypt("time_segments.url", req.query.userid) + " AS url, " + decrypt("datetime", req.query.userid) + " AS datetime, " + decrypt("category", req.query.userid) + " AS category, " + decrypt("timespent", req.query.userid) + " AS timespent, " + decrypt("exclude", req.query.userid) + " AS exclude FROM time_segments JOIN categories ON (time_segments.url = categories.url AND time_segments.userid = categories.userid) WHERE time_segments.userid = " + encrypt(req.query.userid, req.query.userid) + ";", function(err, rows, fields) {
 	  if (err) throw err;
 	  else {
 	  	res.header('Access-Control-Allow-Origin', '*');
@@ -35,11 +35,25 @@ app.get('/data', function(req, res) {
 	});
 });
 
+//pull all public time segment data from the server a JSON object called response with an array element called timeSegments
+app.get('/pullPublicData', function(req, res) {
+
+	connection.query("SELECT total_time_segments.url AS url, time_spent as timespent, category, up_votes, down_votes FROM total_time_segments LEFT JOIN (SELECT total_categories.url, total_categories.category FROM total_categories JOIN (SELECT MAX(votes) AS votes, url FROM total_categories GROUP BY url) AS max_table ON total_categories.url = max_table.url AND total_categories.votes = max_table.votes) AS consolidated_categories ON total_time_segments.url = consolidated_categories.url LEFT JOIN excluded_urls ON total_time_segments.url=excluded_urls.url;", function(err, rows, fields) {
+		if (err) throw err;
+		else {
+			res.header('Access-Control-Allow-Origin', '*');
+	  	res.send(rows);
+		}
+
+	});
+
+});
+
 //inserts a new 'private' timesegment into the database based on the url, datetime, and userid passed in the request
 app.get('/addPrivateTimeSegment', function(req, res) {
 
 	//INSERT TIMESEGMENT
-	connection.query("INSERT INTO time_segments (url, datetime, userid) VALUES (" + encrypt(req.query.url, req.query.userid) + ", " + encrypt(req.query.datetime, req.query.userid) + ", " + encrypt(req.query.userid, req.query.userid) + ");", function(err) {
+	connection.query("INSERT INTO time_segments (url, datetime, userid, timespent) VALUES (" + encrypt(req.query.url, req.query.userid) + ", " + encrypt(req.query.datetime, req.query.userid) + ", " + encrypt(req.query.userid, req.query.userid) + ", " + encrypt(req.query.timespent, req.query.userid) + ");", function(err) {
 	  if (err) throw err;	  	 
 	});
 	
@@ -49,7 +63,7 @@ app.get('/addPrivateTimeSegment', function(req, res) {
 	});
 
 	res.header('Access-Control-Allow-Origin', '*');
-	res.send(200);
+	res.sendStatus(200);
 });
 
 //Increments the sent url by the sent timespent (if url doesn't currently exist in the database adds it)
@@ -69,7 +83,7 @@ app.get('/incrementPublicURL', function(req, res) {
 	});
 
 	res.header('Access-Control-Allow-Origin', '*');
-	res.send(200);
+	res.sendStatus(200);
 });
 
 //updates the category of the url in the users private table and ajusts the votes in the public table
@@ -124,6 +138,60 @@ app.get('/updateCategory', function(req, res) {
 			});
 		}
 	}
+
+	res.header('Access-Control-Allow-Origin', '*');
+	res.sendStatus(200);
+});
+
+//updates the exclude field of the url in the users private table and ajusts the votes in the public table
+app.get('/excludeURL', function(req, res) {		
+	
+	var url = decodeURIComponent(req.query.url);
+	var userid = decodeURIComponent(req.query.userid);
+	var exclude = decodeURIComponent(req.query.exclude);
+
+	//Updates the exclude field in the category table of the url
+	connection.query("UPDATE categories SET exclude=" + encrypt(exclude, userid) + " WHERE url=" + encrypt(url, userid) + " AND userid=" + encrypt(userid, userid) + ";", function(err) {
+	  if (err) throw err;
+	});
+
+	//UPDATE EXCLUDED_URLS
+	connection.query("SELECT up_votes, down_votes FROM excluded_urls WHERE url='" + url + "';", function(err, rows) {
+		if (rows.length === 0) {
+			connection.query("INSERT INTO excluded_urls (url, up_votes, down_votes) VALUES ('" + url + "', 1, 0);", function(err) {
+				if (err) throw err;						
+			});
+		}
+		else {
+			console.log("Exclude is: ", exclude);
+			var new_up_votes = Number(rows[0].up_votes);
+			var new_down_votes = Number(rows[0].down_votes);
+ 
+			if (exclude === "true") {
+				new_up_votes += 1;
+			} else {
+				new_down_votes += 1;
+			}
+
+			console.log("UPDATE excluded_urls SET up_votes=" + new_up_votes + ", down_votes=" + new_down_votes + " WHERE url='" + url + "';");
+			connection.query("UPDATE excluded_urls SET up_votes=" + new_up_votes + ", down_votes=" + new_down_votes + " WHERE url='" + url + "';");
+		}
+	});	
+
+	res.header('Access-Control-Allow-Origin', '*');
+	res.sendStatus(200);
+});
+
+//removes the url in the users private table
+app.get('/removeURL', function(req, res) {		
+	
+	var url = decodeURIComponent(req.query.url);
+	var userid = decodeURIComponent(req.query.userid);
+
+	//Removes all time segements with the url from the private table
+	connection.query("DELETE FROM time_segments WHERE url=" + encrypt(url, userid) + " AND userid=" + encrypt(userid, userid) + ";", function(err) {
+	  if (err) throw err;
+	});
 
 	res.header('Access-Control-Allow-Origin', '*');
 	res.sendStatus(200);
