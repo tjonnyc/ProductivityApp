@@ -70,14 +70,16 @@
 
 	var _settings2 = _interopRequireDefault(_settings);
 
-	var _store = __webpack_require__(414);
+	var _admin = __webpack_require__(414);
+
+	var _admin2 = _interopRequireDefault(_admin);
+
+	var _store = __webpack_require__(415);
 
 	var _store2 = _interopRequireDefault(_store);
 
 	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-	//Import Views
-	//Import Libraries
 	_reactDom2.default.render(_react2.default.createElement(
 	  _reactRedux.Provider,
 	  { store: _store2.default },
@@ -90,12 +92,17 @@
 	      _react2.default.createElement(_reactRouter.IndexRoute, { component: _urlcategoryview2.default }),
 	      _react2.default.createElement(_reactRouter.Route, { path: '/category', component: _urlcategoryview2.default }),
 	      _react2.default.createElement(_reactRouter.Route, { path: '/settings', component: _settings2.default }),
+	      _react2.default.createElement(_reactRouter.Route, { path: '/admin', component: _admin2.default }),
 	      _react2.default.createElement(_reactRouter.Route, { path: '*', component: _urlcategoryview2.default })
 	    )
 	  )
 	), document.querySelector('.app'));
 
 	//Import Store
+
+
+	//Import Views
+	//Import Libraries
 
 /***/ },
 /* 1 */,
@@ -27314,6 +27321,11 @@
 				type: 'REMOVE_URL',
 				url: url
 			};
+		},
+		updateDefaultCategories: function updateDefaultCategories() {
+			return {
+				type: 'UPDATE_DEFAULT_CATEGORIES'
+			};
 		}
 	};
 
@@ -27547,14 +27559,28 @@
 			value: function render() {
 				var personalChart;
 				if (this.props.main.websites.length) {
-					personalChart = _react2.default.createElement(_reactChartjs.Doughnut, { id: 'myChart', data: this.generatePersonalChartData(), height: 400 });
+					personalChart = _react2.default.createElement(_reactChartjs.Doughnut, {
+						id: 'myChart',
+						data: this.generatePersonalChartData(),
+						height: 200,
+						options: {
+							legend: {
+								position: 'bottom'
+							} } });
 				} else {
 					personalChart = "Loading...";
 				}
 
 				var publicChart;
 				if (this.props.main.publicWebsites.length) {
-					publicChart = _react2.default.createElement(_reactChartjs.Doughnut, { id: 'myChart', data: this.generatePublicChartData(), height: 400 });
+					publicChart = _react2.default.createElement(_reactChartjs.Doughnut, {
+						id: 'myChart',
+						data: this.generatePublicChartData(),
+						height: 200,
+						options: {
+							legend: {
+								position: 'bottom'
+							} } });
 				} else {
 					publicChart = "Loading...";
 				}
@@ -27570,36 +27596,139 @@
 							{ className: 'row' },
 							_react2.default.createElement(
 								'div',
-								{ className: 'col-sm-6 col-md-6 col-lg-6' },
+								{ className: 'col-md-6' },
 								_react2.default.createElement(
 									'div',
-									{ className: 'row' },
+									{ className: 'panel panel-default' },
 									_react2.default.createElement(
 										'div',
-										{ className: 'col-sm-6 col-md-6 col-lg-6' },
+										{ className: 'panel-heading' },
 										_react2.default.createElement(
-											'h4',
-											null,
+											'h3',
+											{ className: 'panel-title' },
 											'Where you spend time on the internet'
-										),
-										personalChart
+										)
 									),
 									_react2.default.createElement(
 										'div',
-										{ className: 'col-sm-6 col-md-6 col-lg-6' },
-										_react2.default.createElement(
-											'h4',
-											null,
-											'Where the average person spends time on the internet'
-										),
-										publicChart
+										{ className: 'panel-body' },
+										personalChart
 									)
 								)
 							),
 							_react2.default.createElement(
 								'div',
-								{ className: 'col-sm-6 col-md-6 col-lg-6' },
-								_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.filter(this.returnNotExluded) })
+								{ className: 'col-md-6' },
+								_react2.default.createElement(
+									'div',
+									{ className: 'panel panel-default' },
+									_react2.default.createElement(
+										'div',
+										{ className: 'panel-heading' },
+										_react2.default.createElement(
+											'h3',
+											{ className: 'panel-title' },
+											'Where the average person spends time on the internet'
+										)
+									),
+									_react2.default.createElement(
+										'div',
+										{ className: 'panel-body' },
+										publicChart
+									)
+								)
+							)
+						),
+						_react2.default.createElement(
+							'div',
+							{ className: 'row' },
+							_react2.default.createElement(
+								'div',
+								{ className: 'col-md-6' },
+								_react2.default.createElement(
+									'div',
+									{ className: 'panel panel-default' },
+									_react2.default.createElement(
+										'div',
+										{ className: 'panel-heading' },
+										_react2.default.createElement(
+											'h3',
+											{ className: 'panel-title' },
+											'Detailed Information...'
+										)
+									),
+									_react2.default.createElement(
+										'div',
+										{ className: 'panel-body' },
+										_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.slice(0, 8).filter(this.returnNotExluded) }),
+										_react2.default.createElement(
+											'ul',
+											{ className: 'pager' },
+											_react2.default.createElement(
+												'li',
+												{ className: 'previous' },
+												_react2.default.createElement(
+													'a',
+													{ href: '#' },
+													'← Previous 10'
+												)
+											),
+											_react2.default.createElement(
+												'li',
+												{ className: 'next' },
+												_react2.default.createElement(
+													'a',
+													{ href: '#' },
+													'Next 10 →'
+												)
+											)
+										)
+									)
+								)
+							),
+							_react2.default.createElement(
+								'div',
+								{ className: 'col-md-6' },
+								_react2.default.createElement(
+									'div',
+									{ className: 'panel panel-default' },
+									_react2.default.createElement(
+										'div',
+										{ className: 'panel-heading' },
+										_react2.default.createElement(
+											'h3',
+											{ className: 'panel-title' },
+											'Detailed Information...'
+										)
+									),
+									_react2.default.createElement(
+										'div',
+										{ className: 'panel-body' },
+										_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalPublicTime, userid: this.props.main.userid, websites: this.props.main.publicWebsites.slice(0, 8).filter(this.returnNotExluded) }),
+										_react2.default.createElement(
+											'ul',
+											{ className: 'pager' },
+											_react2.default.createElement(
+												'li',
+												{ className: 'previous' },
+												_react2.default.createElement(
+													'a',
+													{ href: '#' },
+													'← Previous 10'
+												)
+											),
+											_react2.default.createElement(
+												'li',
+												{ className: 'next' },
+												_react2.default.createElement(
+													'a',
+													{ href: '#' },
+													'Next 10 →'
+												)
+											)
+										)
+									)
+								)
 							)
 						)
 					)
@@ -53360,8 +53489,8 @@
 				}
 
 				return _react2.default.createElement(
-					'section',
-					{ id: 'tableView', className: 'col-sm-6 col-md-6 col-lg-6' },
+					'div',
+					{ id: 'tableView' },
 					_react2.default.createElement(
 						'table',
 						{ className: 'table table-striped' },
@@ -54621,6 +54750,79 @@
 /* 414 */
 /***/ function(module, exports, __webpack_require__) {
 
+	"use strict";
+
+	Object.defineProperty(exports, "__esModule", {
+		value: true
+	});
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(2);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; } //import libraries
+
+
+	var Admin = function (_Component) {
+		_inherits(Admin, _Component);
+
+		function Admin(props) {
+			_classCallCheck(this, Admin);
+
+			return _possibleConstructorReturn(this, (Admin.__proto__ || Object.getPrototypeOf(Admin)).call(this, props));
+		}
+
+		_createClass(Admin, [{
+			key: "render",
+			value: function render() {
+
+				return _react2.default.createElement(
+					"div",
+					{ className: "row" },
+					_react2.default.createElement(
+						"div",
+						{ className: "col-lg-6" },
+						_react2.default.createElement(
+							"h3",
+							null,
+							"Administrative Tasks"
+						),
+						_react2.default.createElement(
+							"button",
+							{ type: "button", className: "btn btn-default", onClick: this.props.updateDefaultCategories },
+							"Update Default Category for Each URL"
+						)
+					),
+					_react2.default.createElement(
+						"div",
+						{ className: "col-lg-6" },
+						_react2.default.createElement(
+							"h3",
+							null,
+							"Custom Monitoring"
+						)
+					)
+				);
+			}
+		}]);
+
+		return Admin;
+	}(_react.Component);
+
+	exports.default = Admin;
+
+/***/ },
+/* 415 */
+/***/ function(module, exports, __webpack_require__) {
+
 	'use strict';
 
 	Object.defineProperty(exports, "__esModule", {
@@ -54630,11 +54832,11 @@
 
 	var _redux = __webpack_require__(167);
 
-	var _reactRouterRedux = __webpack_require__(415);
+	var _reactRouterRedux = __webpack_require__(416);
 
 	var _reactRouter = __webpack_require__(187);
 
-	var _reducer_main = __webpack_require__(420);
+	var _reducer_main = __webpack_require__(421);
 
 	var _reducer_main2 = _interopRequireDefault(_reducer_main);
 
@@ -54677,7 +54879,7 @@
 	exports.default = store;
 
 /***/ },
-/* 415 */
+/* 416 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -54687,7 +54889,7 @@
 	});
 	exports.routerMiddleware = exports.routerActions = exports.goForward = exports.goBack = exports.go = exports.replace = exports.push = exports.CALL_HISTORY_METHOD = exports.routerReducer = exports.LOCATION_CHANGE = exports.syncHistoryWithStore = undefined;
 
-	var _reducer = __webpack_require__(416);
+	var _reducer = __webpack_require__(417);
 
 	Object.defineProperty(exports, 'LOCATION_CHANGE', {
 	  enumerable: true,
@@ -54702,7 +54904,7 @@
 	  }
 	});
 
-	var _actions = __webpack_require__(417);
+	var _actions = __webpack_require__(418);
 
 	Object.defineProperty(exports, 'CALL_HISTORY_METHOD', {
 	  enumerable: true,
@@ -54747,11 +54949,11 @@
 	  }
 	});
 
-	var _sync = __webpack_require__(418);
+	var _sync = __webpack_require__(419);
 
 	var _sync2 = _interopRequireDefault(_sync);
 
-	var _middleware = __webpack_require__(419);
+	var _middleware = __webpack_require__(420);
 
 	var _middleware2 = _interopRequireDefault(_middleware);
 
@@ -54761,7 +54963,7 @@
 	exports.routerMiddleware = _middleware2['default'];
 
 /***/ },
-/* 416 */
+/* 417 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -54805,7 +55007,7 @@
 	}
 
 /***/ },
-/* 417 */
+/* 418 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -54847,7 +55049,7 @@
 	var routerActions = exports.routerActions = { push: push, replace: replace, go: go, goBack: goBack, goForward: goForward };
 
 /***/ },
-/* 418 */
+/* 419 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -54860,7 +55062,7 @@
 
 	exports['default'] = syncHistoryWithStore;
 
-	var _reducer = __webpack_require__(416);
+	var _reducer = __webpack_require__(417);
 
 	var defaultSelectLocationState = function defaultSelectLocationState(state) {
 	  return state.routing;
@@ -55001,7 +55203,7 @@
 	}
 
 /***/ },
-/* 419 */
+/* 420 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -55011,7 +55213,7 @@
 	});
 	exports['default'] = routerMiddleware;
 
-	var _actions = __webpack_require__(417);
+	var _actions = __webpack_require__(418);
 
 	function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } }
 
@@ -55039,7 +55241,7 @@
 	}
 
 /***/ },
-/* 420 */
+/* 421 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
@@ -55050,7 +55252,7 @@
 
 	var _redux = __webpack_require__(167);
 
-	var _reactRouterRedux = __webpack_require__(415);
+	var _reactRouterRedux = __webpack_require__(416);
 
 	//Pulls the users data from the AWS Server and loads the websites array in state
 	//Import Libraries
@@ -55105,19 +55307,30 @@
 
 	function consolidateTimeSegments(timeSegments) {
 
+	  console.log(timeSegments);
+
 	  return timeSegments.reduce(function (prev, curr, index, array) {
 
 	    if (curr.url !== "IDLE") {
+
+	      //manage category defaults
+	      curr.category = curr.private_category || curr.default_category || "Not Yet Categorized";
+
+	      //manage exclusion defaults
+	      var exclusion_default = void 0;
+	      if (curr.up_votes && curr.down_votes && curr.up_votes > curr.down_votes) {
+	        exclusion_default = "true";
+	      } else {
+	        exclusion_default = "false";
+	      }
+	      curr.exclude = curr.exclude || exclusion_default;
+
 	      var existingURLIndex = prev.findIndex(function (item) {
 	        return item.url === curr.url;
 	      });
 
-	      if (curr.up_votes && curr.down_votes && curr.up_votes > curr.down_votes) {
-	        curr.exclude = "true";
-	      }
-
 	      if (existingURLIndex === -1) {
-	        prev.push({ url: curr.url, timeElapsed: Number(curr.timespent), category: curr.category || "Uncategorized", exclude: curr.exclude || "false" });
+	        prev.push({ url: curr.url, timeElapsed: Number(curr.timespent), category: curr.category, exclude: curr.exclude });
 	      } else {
 	        prev[existingURLIndex].timeElapsed += Number(curr.timespent);
 	      }
@@ -55248,6 +55461,13 @@
 	  return { websites: websites, categories: categories, urlsRemoved: urlsRemoved, recentChange: true };
 	}
 
+	function updateDefaultCategories() {
+	  var xhttp = new XMLHttpRequest();
+	  console.log("GET", "/updateDefaultCategories");
+	  xhttp.open("GET", "/updateDefaultCategories");;
+	  xhttp.send();
+	}
+
 	function main() {
 	  var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 	  var action = arguments[1];
@@ -55268,6 +55488,10 @@
 	      break;
 	    case 'REMOVE_URL':
 	      return Object.assign({}, state, removeUrl(state, action.url));
+	      break;
+	    case 'UPDATE_DEFAULT_CATEGORIES':
+	      updateDefaultCategories();
+	      return state;
 	      break;
 	    default:
 	      return state;

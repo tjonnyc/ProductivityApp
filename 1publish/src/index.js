@@ -1,15 +1,26 @@
-import React from 'react';
+//Import Libraries
+import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { Provider } from 'react-redux';
-import { createStore, applyMiddleware } from 'redux';
+import { Router, Route, Link, IndexRoute, hashHistory, browserHistory } from 'react-router';
 
-import App from './components/app';
-import reducers from './reducers/index.js';
+//Import Views
+import Container from './components/container.js';
+import UrlCategoryView from './components/urlcategoryview.js';
+import Settings from './components/settings.js';
 
-const createStoreWithMiddleware = applyMiddleware()(createStore);
+//Import Store
+import store, { history } from './reducers/store.js';
 
 ReactDOM.render(
-	<Provider store={createStoreWithMiddleware(reducers)}>
-		<App />
+	<Provider store={store}>
+		<Router history={hashHistory}>
+        <Route path='/' component={Container}>
+          <IndexRoute component={UrlCategoryView} />
+          <Route path='/category' component={UrlCategoryView} />
+          <Route path='/settings' component={Settings} />
+          <Route path='*' component={UrlCategoryView} />
+        </Route>
+   		</Router>		
 	</Provider>
-	, document.querySelector('.container'));
+	, document.querySelector('.app'));

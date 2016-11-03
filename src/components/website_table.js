@@ -52,16 +52,16 @@ export default class Website_Table extends Component {
 		}
 
 		return (
-			<section id="tableView" className="col-sm-6 col-md-6 col-lg-6">
-					<table className="table table-striped">
-					    <thead>						    
-					      {header}						    
-						  </thead>
-						  <tbody>
-						    {Rows}
-						  </tbody>
-						</table>
-			</section>
+			<div id="tableView">
+				<table className="table table-striped">
+			    <thead>						    
+			      {header}						    
+				  </thead>
+				  <tbody>
+				    {Rows}
+				  </tbody>
+				</table>
+			</div>
 		);
 	}
 }

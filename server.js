@@ -22,10 +22,40 @@ function decrypt(value, key) {
 	return "CAST(AES_DECRYPT(" + value + ", UNHEX(SHA2('" + key + "',512))) AS CHAR(50))";
 }
 
+
 //pull all time segment data from the server and pass back as a JSON object called response with an array element called timeSegments
 app.get('/pullPrivateData', function(req, res) {
 
-	connection.query("SELECT " + decrypt("time_segments.url", req.query.userid) + " AS url, " + decrypt("datetime", req.query.userid) + " AS datetime, " + decrypt("category", req.query.userid) + " AS category, " + decrypt("timespent", req.query.userid) + " AS timespent, " + decrypt("exclude", req.query.userid) + " AS exclude FROM time_segments JOIN categories ON (time_segments.url = categories.url AND time_segments.userid = categories.userid) WHERE time_segments.userid = " + encrypt(req.query.userid, req.query.userid) + ";", function(err, rows, fields) {
+	var pull_private_data = `
+		SELECT ` +
+			decrypt("time_segments.url", req.query.userid) + " AS url," +
+			decrypt("datetime", req.query.userid) + " AS datetime, " +			
+			decrypt("timespent", req.query.userid) + " AS timespent, " +
+			decrypt("exclude", req.query.userid) + " AS exclude, " +
+			decrypt("category", req.query.userid) + " AS private_category, " +
+			`default_categories.default_category AS default_category,
+			up_votes,
+			down_votes
+ 		FROM
+ 			time_segments 
+		LEFT JOIN
+		 categories
+		ON
+			time_segments.url = categories.url
+			AND
+			time_segments.userid = categories.userid
+		LEFT JOIN
+			(SELECT url, category AS default_category FROM total_categories WHERE is_default = 'true') AS default_categories
+		ON
+			time_segments.url = default_categories.url
+		LEFT JOIN 
+			excluded_urls
+		ON
+			time_segments.url = excluded_urls.url
+		WHERE
+			time_segments.userid=` + encrypt(req.query.userid, req.query.userid);
+	console.log(pull_private_data);
+	connection.query(pull_private_data, function(err, rows, fields) {
 	  if (err) throw err;
 	  else {
 	  	res.header('Access-Control-Allow-Origin', '*');
@@ -38,7 +68,27 @@ app.get('/pullPrivateData', function(req, res) {
 //pull all public time segment data from the server a JSON object called response with an array element called timeSegments
 app.get('/pullPublicData', function(req, res) {
 
-	connection.query("SELECT total_time_segments.url AS url, time_spent as timespent, category, up_votes, down_votes FROM total_time_segments LEFT JOIN (SELECT total_categories.url, total_categories.category FROM total_categories JOIN (SELECT MAX(votes) AS votes, url FROM total_categories GROUP BY url) AS max_table ON total_categories.url = max_table.url AND total_categories.votes = max_table.votes) AS consolidated_categories ON total_time_segments.url = consolidated_categories.url LEFT JOIN excluded_urls ON total_time_segments.url=excluded_urls.url;", function(err, rows, fields) {
+	var pull_public_data = `
+		SELECT 
+			total_time_segments.url AS url, 
+			time_spent as timespent, 
+			default_category, 
+			up_votes, 
+			down_votes
+ 		FROM
+ 			total_time_segments 		
+		LEFT JOIN
+			(SELECT url, category AS default_category FROM total_categories WHERE is_default = 'true') AS default_categories
+		ON
+			total_time_segments.url = default_categories.url
+		LEFT JOIN 
+			excluded_urls
+		ON
+			total_time_segments.url = excluded_urls.url`
+
+	console.log(pull_public_data);
+
+	connection.query(pull_public_data, function(err, rows, fields) {
 		if (err) throw err;
 		else {
 			res.header('Access-Control-Allow-Origin', '*');
@@ -46,20 +96,14 @@ app.get('/pullPublicData', function(req, res) {
 		}
 
 	});
-
 });
 
 //inserts a new 'private' timesegment into the database based on the url, datetime, and userid passed in the request
 app.get('/addPrivateTimeSegment', function(req, res) {
 
 	//INSERT TIMESEGMENT
-	connection.query("INSERT INTO time_segments (url, datetime, userid, timespent) VALUES (" + encrypt(req.query.url, req.query.userid) + ", " + encrypt(req.query.datetime, req.query.userid) + ", " + encrypt(req.query.userid, req.query.userid) + ", " + encrypt(req.query.timespent, req.query.userid) + ");", function(err) {
+	connection.query("INSERT IGNORE INTO time_segments (url, datetime, userid, timespent) VALUES (" + encrypt(req.query.url, req.query.userid) + ", " + encrypt(req.query.datetime, req.query.userid) + ", " + encrypt(req.query.userid, req.query.userid) + ", " + encrypt(req.query.timespent, req.query.userid) + ");", function(err) {
 	  if (err) throw err;	  	 
-	});
-	
-	//INSERT CATEGORY
-	connection.query("INSERT INTO categories (url, category, userid) VALUES (" + encrypt(req.query.url, req.query.userid) + ", " + encrypt('Click to Categorize', req.query.userid) + ", " + encrypt(req.query.userid, req.query.userid) + ");", function(err) {
-	  if (err && err.code !== "ER_DUP_ENTRY") {console.log(err.code);}
 	});
 
 	res.header('Access-Control-Allow-Origin', '*');
@@ -69,14 +113,14 @@ app.get('/addPrivateTimeSegment', function(req, res) {
 //Increments the sent url by the sent timespent (if url doesn't currently exist in the database adds it)
 app.get('/incrementPublicURL', function(req, res) {
 	
-	connection.query("SELECT time_spent FROM total_time_segments WHERE url='" + req.query.url +"';", function(err, rows) {				
+	connection.query("SELECT time_spent FROM total_time_segments WHERE url='" + req.query.url +"' LIMIT 1;", function(err, rows) {				
 		if (rows.length === 0) {
 			connection.query("INSERT INTO total_time_segments (url, time_spent) VALUES ('" + req.query.url + "', " + req.query.timespent + ");", function(err) {
 				if (err) throw err;
 			});
 		}
 		else {			
-			connection.query("UPDATE total_time_segments SET time_spent=" + (Number(rows[0].time_spent) + Number(req.query.timespent)) + " WHERE url='" + req.query.url + "';", function(err) {
+			connection.query("UPDATE total_time_segments SET time_spent=" + (Number(rows[0].time_spent) + Number(req.query.timespent)) + " WHERE url='" + req.query.url + "' LIMIT 1;", function(err) {
 				if (err) throw err;
 			});
 		}
@@ -89,54 +133,57 @@ app.get('/incrementPublicURL', function(req, res) {
 //updates the category of the url in the users private table and ajusts the votes in the public table
 app.get('/updateCategory', function(req, res) {		
 	
-	req.query.url = decodeURIComponent(req.query.url);
-	req.query.userid = decodeURIComponent(req.query.userid);
-	req.query.newCategory = decodeURIComponent(req.query.newCategory);
-	req.query.oldCategory = decodeURIComponent(req.query.oldCategory);
+	url = decodeURIComponent(req.query.url);
+	userid = decodeURIComponent(req.query.userid);
+	newCategory = decodeURIComponent(req.query.newCategory);
+	oldCategory = decodeURIComponent(req.query.oldCategory);
 
-	if (req.query.newCategory === "") {
-		req.query.newCategory = "Click to Categorize";
-	}
-	
-	if (req.query.oldCategory === "") {
-		req.query.oldCategory = "Click to Categorize";
-	}
-
-	if (req.query.newCategory !== req.query.oldCategory) {
-
-		//Updates the category of the private url
-		connection.query("UPDATE categories SET category=" + encrypt(req.query.newCategory, req.query.userid) + " WHERE url=" + encrypt(req.query.url, req.query.userid) + " AND userid=" + encrypt(req.query.userid, req.query.userid) + ";", function(err) {
-		  if (err) throw err;
-		});
-
-		//UPDATE TOTAL_CATEGORIES - NEW CATEGORY
-		if (req.query.newCategory !== "Click to Categorize") {			
-			connection.query("SELECT votes FROM total_categories WHERE url='" + req.query.url +"' AND category='" + req.query.newCategory + "';", function(err, rows) {
-				if (rows.length === 0) {
-					console.log("INSERT INTO total_categories (url, category, votes) VALUES ('" + req.query.url + "', '" + req.query.newCategory + "', 1);");
-					connection.query("INSERT INTO total_categories (url, category, votes) VALUES ('" + req.query.url + "', '" + req.query.newCategory + "', 1);", function(err) {
-						if (err) throw err;						
-					});
-				}
-				else {
-					console.log("UPDATE total_categories SET votes=" + (Number(rows[0].votes) + 1) + " WHERE url='" + req.query.url + "' AND category='" + req.query.newCategory + "';");
-					connection.query("UPDATE total_categories SET votes=" + (Number(rows[0].votes) + 1) + " WHERE url='" + req.query.url + "' AND category='" + req.query.newCategory + "';")
-				}
-			});
-		}	
-
-		//UPDATE TOTAL_CATEGORIES - OLD CATEGORY
-		if (req.query.oldCategory !== "Click to Categorize") {
-			connection.query("SELECT votes FROM total_categories WHERE url='" + req.query.url +"' AND category='" + req.query.oldCategory + "';", function(err, rows) {
-				if (rows.length === 0) {
-					console.log("Old Category should never have zero rows");
-				}
-				else {
-					console.log("UPDATE total_categories SET votes=" + (Number(rows[0].votes) - 1) + " WHERE url='" + req.query.url + "' AND category='" + req.query.oldCategory + "';");
-					connection.query("UPDATE total_categories SET votes=" + (Number(rows[0].votes) - 1) + " WHERE url='" + req.query.url + "' AND category='" + req.query.oldCategory + "';");
-				}
+	//Updates the category of the private url
+	var select_current_category = `
+		SELECT ` +
+			decrypt("category", req.query.userid) +
+		`FROM
+			categories
+		WHERE 
+			url='` + url + "' LIMIT 1";
+	console.log(select_current_category);
+	connection.query(select_current_category, function(err, rows) {				
+		if (rows.length === 0) {
+			connection.query("INSERT INTO categories (url, category, userid) VALUES (" + encrypt(url, userid) + ", " + encrypt(newCategory, userid) + ", " + encrypt(userid, userid) + ");", function(err) {
+				if (err) throw err;
 			});
 		}
+		else {			
+			connection.query("UPDATE categories SET category=" + encrypt(newCategory, userid) + " WHERE url=" + encrypt(url, userid) + " AND userid=" + encrypt(userid, userid) + " LIMIT 1;", function(err) {
+				if (err) throw err;
+			});
+		}
+	});
+
+	//Updates the total categories table, adding or increasing the new category vote for that url
+	if (newCategory !== "") {			
+		connection.query("SELECT votes FROM total_categories WHERE url='" + url +"' AND category='" + newCategory + "' LIMIT 1;", function(err, rows) {
+			if (rows.length === 0) {
+				connection.query("INSERT INTO total_categories (url, category, votes) VALUES ('" + url + "', '" + newCategory + "', 1);", function(err) {
+					if (err) throw err;						
+				});
+			}
+			else {
+				connection.query("UPDATE total_categories SET votes=" + (Number(rows[0].votes) + 1) + " WHERE url='" + url + "' AND category='" + newCategory + "' LIMIT 1;")
+			}
+		});
+	}	
+
+	//Updates the total categories table, decreasing the old category vote for that url
+	if (oldCategory !== "") {
+		connection.query("SELECT votes FROM total_categories WHERE url='" + url +"' AND category='" + oldCategory + "' LIMIT 1;", function(err, rows) {
+			if (rows.length === 0) {
+				console.log("Old Category should never have zero rows");
+			}
+			else {
+				connection.query("UPDATE total_categories SET votes=" + (Number(rows[0].votes) - 1) + " WHERE url='" + url + "' AND category='" + oldCategory + "' LIMIT 1;");
+			}
+		});
 	}
 
 	res.header('Access-Control-Allow-Origin', '*');
@@ -150,13 +197,13 @@ app.get('/excludeURL', function(req, res) {
 	var userid = decodeURIComponent(req.query.userid);
 	var exclude = decodeURIComponent(req.query.exclude);
 
-	//Updates the exclude field in the category table of the url
-	connection.query("UPDATE categories SET exclude=" + encrypt(exclude, userid) + " WHERE url=" + encrypt(url, userid) + " AND userid=" + encrypt(userid, userid) + ";", function(err) {
+	//Updates the exclude field in the private category table of the url
+	connection.query("UPDATE categories SET exclude=" + encrypt(exclude, userid) + " WHERE url=" + encrypt(url, userid) + " AND userid=" + encrypt(userid, userid) + " LIMIT 1;", function(err) {
 	  if (err) throw err;
 	});
 
-	//UPDATE EXCLUDED_URLS
-	connection.query("SELECT up_votes, down_votes FROM excluded_urls WHERE url='" + url + "';", function(err, rows) {
+	//Updates the excluded urls table
+	connection.query("SELECT up_votes, down_votes FROM excluded_urls WHERE url='" + url + "' LIMIT 1;", function(err, rows) {
 		if (rows.length === 0) {
 			connection.query("INSERT INTO excluded_urls (url, up_votes, down_votes) VALUES ('" + url + "', 1, 0);", function(err) {
 				if (err) throw err;						
@@ -173,8 +220,8 @@ app.get('/excludeURL', function(req, res) {
 				new_down_votes += 1;
 			}
 
-			console.log("UPDATE excluded_urls SET up_votes=" + new_up_votes + ", down_votes=" + new_down_votes + " WHERE url='" + url + "';");
-			connection.query("UPDATE excluded_urls SET up_votes=" + new_up_votes + ", down_votes=" + new_down_votes + " WHERE url='" + url + "';");
+			console.log("UPDATE excluded_urls SET up_votes=" + new_up_votes + ", down_votes=" + new_down_votes + " WHERE url='" + url + "' LIMIT 1;");
+			connection.query("UPDATE excluded_urls SET up_votes=" + new_up_votes + ", down_votes=" + new_down_votes + " WHERE url='" + url + "' LIMIT 1;");
 		}
 	});	
 
@@ -196,6 +243,51 @@ app.get('/removeURL', function(req, res) {
 	res.header('Access-Control-Allow-Origin', '*');
 	res.sendStatus(200);
 });
+
+//Updates the total categories table - indicating for each url, category combination whether or not it is default
+app.get('/updateDefaultCategories', function(req, res) {		
+
+	var allFalse = `
+		UPDATE 
+			total_categories 
+		SET 
+			is_default='false'
+		WHERE
+			is_default='true'
+	`;
+
+	console.log(allFalse);
+	connection.query(allFalse, function(err) {
+		if (err) throw err;
+	})
+
+	var setMaxToTrue = `
+		UPDATE
+			total_categories
+		JOIN (
+			SELECT 
+				MAX(votes) AS votes, url
+			FROM
+				total_categories
+			GROUP BY url
+			) as max_table
+		ON
+			total_categories.url=max_table.url
+			AND
+			total_categories.votes=max_table.votes
+		SET
+			is_default='true'		
+	`;
+
+	console.log(setMaxToTrue);
+	connection.query(setMaxToTrue, function(err) {
+		if (err) throw err;
+	})
+
+	res.header('Access-Control-Allow-Origin', '*');
+	res.sendStatus(200);
+});
+
 
 app.listen(8081, function () {
   console.log('Example app listening on port 8081!');

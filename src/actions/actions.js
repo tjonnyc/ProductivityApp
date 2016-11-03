@@ -38,6 +38,12 @@ let actions = {
 		}
 	},
 
+	updateDefaultCategories() {
+		return {
+			type: 'UPDATE_DEFAULT_CATEGORIES',
+		}
+	},
+
 }
 
 export default actions

@@ -152,14 +152,15 @@
 			if (url !== currentURL) {
 				var time = Date.now();
 
-				//Add a 'private' time segment by sending the url and datetime and userid to add to the db
-				var xhttp = new XMLHttpRequest();
-				console.log(server + "/addPrivateTimeSegment?url=" + url + "&datetime=" + time + "&userid=" + user_id);
-				xhttp.open("GET", server + "/addPrivateTimeSegment?url=" + url + "&datetime=" + time + "&userid=" + user_id);
-				xhttp.send();
-
-				//Increment the 'public' time spent on the current (e.g. prior) url by sending the time spent since the last url was clicked
 				if (currentURL !== "") {
+
+					//Add a 'private' time segment by sending the url and datetime and userid to add to the db
+					var xhttp = new XMLHttpRequest();
+					console.log(server + "/addPrivateTimeSegment?url=" + currentURL + "&datetime=" + time + "&userid=" + user_id + "&timespent=" + (time - currentTime));
+					xhttp.open("GET", server + "/addPrivateTimeSegment?url=" + currentURL + "&datetime=" + time + "&userid=" + user_id + "&timespent=" + (time - currentTime));
+					xhttp.send();
+
+					//Increment the 'public' time spent on the current (e.g. prior) url by sending the time spent since the last url was clicked
 					var xhttp2 = new XMLHttpRequest();
 					console.log(server + "/incrementPublicURL?url=" + currentURL + "&timespent=" + (time - currentTime));
 					xhttp2.open("GET", server + "/incrementPublicURL?url=" + currentURL + "&timespent=" + (time - currentTime));

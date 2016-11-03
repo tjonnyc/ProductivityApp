@@ -15,7 +15,6 @@ function pullData(privateData, publicData) {
   let totalPublicTime = calculateTotalTime(publicWebsites);
   let publicCategories = consolidateCategories(publicWebsites);
   return {totalNumDays, totalTime, websites, categories, publicWebsites, publicCategories, totalPublicTime};   
-
 }
 
 function calculateTotalNumDays(timeSegments) {
@@ -55,17 +54,28 @@ function consolidateCategories(websites) {
 
 function consolidateTimeSegments(timeSegments) {
 
+  console.log(timeSegments);
+
   return timeSegments.reduce(function(prev, curr, index, array) {
   
-    if (curr.url !== "IDLE") {
+    if (curr.url !== "IDLE") {      
+
+      //manage category defaults
+      curr.category = curr.private_category || curr.default_category || "Not Yet Categorized";
+
+      //manage exclusion defaults
+      let exclusion_default;
+      if (curr.up_votes && curr.down_votes && curr.up_votes > curr.down_votes) {
+        exclusion_default = "true";
+      } else {
+        exclusion_default = "false";
+      }
+      curr.exclude = curr.exclude || exclusion_default;
+
       let existingURLIndex = prev.findIndex((item) => {return item.url === curr.url});
 
-      if (curr.up_votes && curr.down_votes && curr.up_votes > curr.down_votes) {
-        curr.exclude = "true";
-      }
-
       if(existingURLIndex === -1) {
-        prev.push({ url: curr.url, timeElapsed: Number(curr.timespent), category: curr.category || "Uncategorized", exclude: curr.exclude || "false" });
+        prev.push({ url: curr.url, timeElapsed: Number(curr.timespent), category: curr.category, exclude: curr.exclude });
       } else {
         prev[existingURLIndex].timeElapsed += Number(curr.timespent);
       }
@@ -199,6 +209,13 @@ function removeUrl(state, url) {
   return { websites, categories, urlsRemoved, recentChange: true };
 }
 
+function updateDefaultCategories() {
+  var xhttp = new XMLHttpRequest();
+  console.log("GET", "/updateDefaultCategories");
+  xhttp.open("GET", "/updateDefaultCategories");;
+  xhttp.send();   
+}
+
 function main(state = {}, action) {
   console.log(state, action);
   switch (action.type) {
@@ -216,6 +233,10 @@ function main(state = {}, action) {
       break;
     case 'REMOVE_URL':
       return Object.assign({}, state, removeUrl(state, action.url));
+      break;
+    case 'UPDATE_DEFAULT_CATEGORIES':
+      updateDefaultCategories();
+      return state;
       break;
     default:
       return state;

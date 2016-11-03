@@ -8,6 +8,7 @@ import { Router, Route, Link, IndexRoute, hashHistory, browserHistory } from 're
 import Container from './components/container.js';
 import UrlCategoryView from './components/urlcategoryview.js';
 import Settings from './components/settings.js';
+import Admin from './components/admin.js';
 
 //Import Store
 import store, { history } from './reducers/store.js';
@@ -19,6 +20,7 @@ ReactDOM.render(
           <IndexRoute component={UrlCategoryView} />
           <Route path='/category' component={UrlCategoryView} />
           <Route path='/settings' component={Settings} />
+          <Route path='/admin' component={Admin} />
           <Route path='*' component={UrlCategoryView} />
         </Route>
    		</Router>		
