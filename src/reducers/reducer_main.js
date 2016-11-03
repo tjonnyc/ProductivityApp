@@ -27,7 +27,11 @@ function calculateTotalNumDays(timeSegments) {
 
 function calculateTotalTime(websites) {
   return websites.reduce(function(prev, curr, index, array) {
-    return prev + curr.timeElapsed;
+    if (curr.timeElapsed) {
+      return prev + curr.timeElapsed;
+    } else {
+      return prev;
+    }
   }, 0);
 }
 
@@ -41,7 +45,7 @@ function consolidateCategories(websites) {
 
       if(existingCategoryIndex === -1) {
         prev.push({url: curr.category, timeElapsed: curr.timeElapsed, category: curr.category});
-      } else {
+      } else if(curr.timeElapsed) {
         prev[existingCategoryIndex].timeElapsed += curr.timeElapsed;
       }      
 
@@ -76,7 +80,7 @@ function consolidateTimeSegments(timeSegments) {
 
       if(existingURLIndex === -1) {
         prev.push({ url: curr.url, timeElapsed: Number(curr.timespent), category: curr.category, exclude: curr.exclude });
-      } else {
+      } else if (curr.timespent)  {
         prev[existingURLIndex].timeElapsed += Number(curr.timespent);
       }
     }
