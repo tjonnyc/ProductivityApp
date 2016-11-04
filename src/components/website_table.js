@@ -13,7 +13,7 @@ export default class Website_Table extends Component {
 	render() {
 		let props = this.props;
 
-		const Rows = this.props.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;}).map(function(website, index) {
+		const Rows = this.props.websites.slice(0).sort((a,b) => {return b.timeElapsed - a.timeElapsed;}).slice(this.props.urlIndex, this.props.urlIndex + 10).map(function(website, index) {
 			return <Website_Row key={index} index={index} website={website} updateCategory={props.updateCategory} totalTime={props.totalTime} totalNumDays={props.totalNumDays} userid={props.userid} type={props.type} excludeURL={props.excludeURL} removeURL={props.removeURL} />;
 		});
 

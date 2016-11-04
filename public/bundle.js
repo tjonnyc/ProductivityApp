@@ -27297,7 +27297,6 @@
 			};
 		},
 		updateDatabase: function updateDatabase() {
-			console.log("Action Called");
 			return {
 				type: 'UPDATE_DATABASE'
 			};
@@ -27325,6 +27324,13 @@
 		updateDefaultCategories: function updateDefaultCategories() {
 			return {
 				type: 'UPDATE_DEFAULT_CATEGORIES'
+			};
+		},
+		changeUrlIndex: function changeUrlIndex(event) {
+			event.preventDefault();
+			return {
+				type: 'CHANGE_URL_INDEX',
+				id: event.target.id
 			};
 		}
 	};
@@ -27377,7 +27383,7 @@
 		_createClass(Nav, [{
 			key: "changeView",
 			value: function changeView(event) {
-				if (event.target.text === "URL View") {
+				if (event.target.text === "URL View" || event.target.text === "Productivity App") {
 					this.setState({ urlView: "active", categoryView: "", settingsView: "" });
 				} else if (event.target.text === "Category View") {
 					this.setState({ urlView: "", categoryView: "active", settingsView: "" });
@@ -27398,8 +27404,8 @@
 							"div",
 							{ className: "navbar-header" },
 							_react2.default.createElement(
-								"a",
-								{ href: "#", className: "navbar-brand" },
+								_reactRouter.Link,
+								{ to: "/", onClick: this.changeView.bind(this), className: "navbar-brand" },
 								"Productivity App"
 							)
 						),
@@ -27660,7 +27666,7 @@
 									_react2.default.createElement(
 										'div',
 										{ className: 'panel-body' },
-										_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.slice(0, 8).filter(this.returnNotExluded) }),
+										_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, type: "Private", urlIndex: this.props.main.privateUrlIndex, websites: this.props.main.websites.filter(this.returnNotExluded) }),
 										_react2.default.createElement(
 											'ul',
 											{ className: 'pager' },
@@ -27669,7 +27675,7 @@
 												{ className: 'previous' },
 												_react2.default.createElement(
 													'a',
-													{ href: '#' },
+													{ href: '#', id: "Private Previous", onClick: this.props.changeUrlIndex },
 													'← Previous 10'
 												)
 											),
@@ -27678,7 +27684,7 @@
 												{ className: 'next' },
 												_react2.default.createElement(
 													'a',
-													{ href: '#' },
+													{ href: '#', id: "Private Next", onClick: this.props.changeUrlIndex },
 													'Next 10 →'
 												)
 											)
@@ -27704,7 +27710,7 @@
 									_react2.default.createElement(
 										'div',
 										{ className: 'panel-body' },
-										_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalPublicTime, userid: this.props.main.userid, websites: this.props.main.publicWebsites.slice(0, 8).filter(this.returnNotExluded) }),
+										_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalPublicTime, userid: this.props.main.userid, type: "Public", urlIndex: this.props.main.publicUrlIndex, websites: this.props.main.publicWebsites.filter(this.returnNotExluded) }),
 										_react2.default.createElement(
 											'ul',
 											{ className: 'pager' },
@@ -27713,7 +27719,7 @@
 												{ className: 'previous' },
 												_react2.default.createElement(
 													'a',
-													{ href: '#' },
+													{ href: '#', id: "Public Previous", onClick: this.props.changeUrlIndex },
 													'← Previous 10'
 												)
 											),
@@ -27722,7 +27728,7 @@
 												{ className: 'next' },
 												_react2.default.createElement(
 													'a',
-													{ href: '#' },
+													{ href: '#', id: "Public Next", onClick: this.props.changeUrlIndex },
 													'Next 10 →'
 												)
 											)
@@ -53391,7 +53397,7 @@
 
 				var Rows = this.props.websites.slice(0).sort(function (a, b) {
 					return b.timeElapsed - a.timeElapsed;
-				}).map(function (website, index) {
+				}).slice(this.props.urlIndex, this.props.urlIndex + 10).map(function (website, index) {
 					return _react2.default.createElement(_website_row2.default, { key: index, index: index, website: website, updateCategory: props.updateCategory, totalTime: props.totalTime, totalNumDays: props.totalNumDays, userid: props.userid, type: props.type, excludeURL: props.excludeURL, removeURL: props.removeURL });
 				});
 
@@ -53630,6 +53636,37 @@
 					);
 				}
 
+				var category = void 0;
+				if (this.props.type === "Private") {
+					category = _react2.default.createElement(_reactAutocomplete2.default, {
+						value: this.props.website.category,
+						items: [{ name: "Entertainment: TV/Video" }, { name: "Entertainment: Social Network" }, { name: "Entertainment: Reading" }, { name: "News" }, { name: "Shopping" }, { name: "Search Engine" }, { name: "Research" }, { name: "Email" }, { name: "Entertainment: Games" }, { name: "Programming" }, { name: "Work" }, { name: "Banking" }, { name: "Pornography" }, { name: "Messaging" }, { name: "Online Dating" }, { name: "Entertainment: Sports" }, { name: "Fantasy Football" }, { name: "Music" }, { name: "School" }, { name: "Productivity" }, { name: "Errands" }],
+						getItemValue: function getItemValue(item) {
+							return item.name;
+						},
+						shouldItemRender: this.shouldItemRender.bind(this),
+						sortItems: this.sortItems.bind(this),
+						onChange: function onChange(event, value) {
+							return _this2.props.updateCategory(_this2.props.website.url, value);
+						},
+						onSelect: function onSelect(value) {
+							return _this2.props.updateCategory(_this2.props.website.url, value);
+						},
+						renderItem: function renderItem(item, isHighlighted) {
+							return _react2.default.createElement(
+								'div',
+								{
+									style: isHighlighted ? styles.highlightedItem : styles.item,
+									key: item.name
+								},
+								item.name
+							);
+						}
+					});
+				} else {
+					category = this.props.website.category;
+				}
+
 				return _react2.default.createElement(
 					'tr',
 					null,
@@ -53651,31 +53688,7 @@
 					_react2.default.createElement(
 						'td',
 						null,
-						_react2.default.createElement(_reactAutocomplete2.default, {
-							value: this.props.website.category,
-							items: [{ name: "Entertainment: TV/Video" }, { name: "Entertainment: Social Network" }, { name: "Entertainment: Reading" }, { name: "News" }, { name: "Shopping" }, { name: "Search Engine" }, { name: "Research" }, { name: "Email" }, { name: "Entertainment: Games" }, { name: "Programming" }, { name: "Work" }, { name: "Banking" }, { name: "Pornography" }, { name: "Messaging" }, { name: "Online Dating" }, { name: "Entertainment: Sports" }, { name: "Fantasy Football" }, { name: "Music" }, { name: "School" }, { name: "Productivity" }, { name: "Errands" }],
-							getItemValue: function getItemValue(item) {
-								return item.name;
-							},
-							shouldItemRender: this.shouldItemRender.bind(this),
-							sortItems: this.sortItems.bind(this),
-							onChange: function onChange(event, value) {
-								return _this2.props.updateCategory(_this2.props.website.url, value);
-							},
-							onSelect: function onSelect(value) {
-								return _this2.props.updateCategory(_this2.props.website.url, value);
-							},
-							renderItem: function renderItem(item, isHighlighted) {
-								return _react2.default.createElement(
-									'div',
-									{
-										style: isHighlighted ? styles.highlightedItem : styles.item,
-										key: item.name
-									},
-									item.name
-								);
-							}
-						})
+						category
 					),
 					excludeButton,
 					removeButton
@@ -54706,35 +54719,90 @@
 					{ className: 'row' },
 					_react2.default.createElement(
 						'div',
-						{ className: 'row' },
+						{ className: 'col-md-6' },
 						_react2.default.createElement(
 							'div',
-							{ className: 'col-lg-12' },
-							'Normal Settings'
+							{ className: 'panel panel-default' },
+							_react2.default.createElement(
+								'div',
+								{ className: 'panel-heading' },
+								_react2.default.createElement(
+									'h3',
+									{ className: 'panel-title' },
+									'Exclude any items you don\'t want to be displayed...'
+								)
+							),
+							_react2.default.createElement(
+								'div',
+								{ className: 'panel-body' },
+								_react2.default.createElement(_website_table2.default, { id: 'displayedTable', totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.filter(this.returnNotExluded), urlIndex: this.props.main.settingsUrlIndex, excludeURL: this.props.excludeURL, removeURL: this.props.removeURL, type: "Exclude" }),
+								_react2.default.createElement(
+									'ul',
+									{ className: 'pager' },
+									_react2.default.createElement(
+										'li',
+										{ className: 'previous' },
+										_react2.default.createElement(
+											'a',
+											{ href: '#', id: "Settings Previous", onClick: this.props.changeUrlIndex },
+											'← Previous 10'
+										)
+									),
+									_react2.default.createElement(
+										'li',
+										{ className: 'next' },
+										_react2.default.createElement(
+											'a',
+											{ href: '#', id: "Settings Next", onClick: this.props.changeUrlIndex },
+											'Next 10 →'
+										)
+									)
+								)
+							)
 						)
 					),
 					_react2.default.createElement(
 						'div',
-						{ className: 'row' },
+						{ className: 'col-md-6' },
 						_react2.default.createElement(
 							'div',
-							{ className: 'col-lg-6' },
+							{ className: 'panel panel-default' },
 							_react2.default.createElement(
-								'h3',
-								null,
-								'Exclude Items?'
+								'div',
+								{ className: 'panel-heading' },
+								_react2.default.createElement(
+									'h3',
+									{ className: 'panel-title' },
+									'These are your excluded Items: Remove any items you want completeley deleted'
+								)
 							),
-							_react2.default.createElement(_website_table2.default, { id: 'displayedTable', totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.filter(this.returnNotExluded), excludeURL: this.props.excludeURL, removeURL: this.props.removeURL, type: "Exclude" })
-						),
-						_react2.default.createElement(
-							'div',
-							{ className: 'col-lg-6' },
 							_react2.default.createElement(
-								'h3',
-								null,
-								'Excluded Items: Permanently Remove Items?'
-							),
-							_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.filter(this.returnExluded), excludeURL: this.props.excludeURL, removeURL: this.props.removeURL, type: "Remove" })
+								'div',
+								{ className: 'panel-body' },
+								_react2.default.createElement(_website_table2.default, { id: 'displayedTable', updateCategory: this.props.updateCategory, totalNumDays: this.props.main.totalNumDays, totalTime: this.props.main.totalTime, userid: this.props.main.userid, websites: this.props.main.websites.filter(this.returnExluded), urlIndex: this.props.main.settingsUrlIndex, excludeURL: this.props.excludeURL, removeURL: this.props.removeURL, type: "Remove" }),
+								_react2.default.createElement(
+									'ul',
+									{ className: 'pager' },
+									_react2.default.createElement(
+										'li',
+										{ className: 'previous' },
+										_react2.default.createElement(
+											'a',
+											{ href: '#', id: "Settings Previous", onClick: this.props.changeUrlIndex },
+											'← Previous 10'
+										)
+									),
+									_react2.default.createElement(
+										'li',
+										{ className: 'next' },
+										_react2.default.createElement(
+											'a',
+											{ href: '#', id: "Settings Next", onClick: this.props.changeUrlIndex },
+											'Next 10 →'
+										)
+									)
+								)
+							)
 						)
 					)
 				);
@@ -54868,7 +54936,10 @@
 			categoriesChanged: [],
 			urlsExcluded: [],
 			urlsRemoved: [],
-			recentChange: false
+			recentChange: false,
+			privateUrlIndex: 0,
+			publicUrlIndex: 0,
+			settingsUrlIndex: 0
 		}
 	};
 
@@ -55472,6 +55543,34 @@
 	  xhttp.send();
 	}
 
+	function changeUrlIndex(state, id) {
+	  if (id === 'Private Previous') {
+	    if (state.privateUrlIndex > 0) {
+	      return { privateUrlIndex: state.privateUrlIndex - 10 };
+	    } else {
+	      return { privateUrlIndex: 0 };
+	    }
+	  } else if (id === 'Private Next') {
+	    return { privateUrlIndex: state.privateUrlIndex + 10 };
+	  } else if (id === 'Public Previous') {
+	    if (state.publicUrlIndex > 0) {
+	      return { publicUrlIndex: state.publicUrlIndex - 10 };
+	    } else {
+	      return { publicUrlIndex: 0 };
+	    }
+	  } else if (id === 'Public Next') {
+	    return { publicUrlIndex: state.publicUrlIndex + 10 };
+	  } else if (id === 'Settings Previous') {
+	    if (state.settingsUrlIndex > 0) {
+	      return { settingsUrlIndex: state.settingsUrlIndex - 10 };
+	    } else {
+	      return { settingsUrlIndex: 0 };
+	    }
+	  } else if (id === 'Settings Next') {
+	    return { settingsUrlIndex: state.settingsUrlIndex + 10 };
+	  }
+	}
+
 	function main() {
 	  var state = arguments.length <= 0 || arguments[0] === undefined ? {} : arguments[0];
 	  var action = arguments[1];
@@ -55492,6 +55591,9 @@
 	      break;
 	    case 'REMOVE_URL':
 	      return Object.assign({}, state, removeUrl(state, action.url));
+	      break;
+	    case 'CHANGE_URL_INDEX':
+	      return Object.assign({}, state, changeUrlIndex(state, action.id));
 	      break;
 	    case 'UPDATE_DEFAULT_CATEGORIES':
 	      updateDefaultCategories();

@@ -29,6 +29,9 @@ const INITIAL_STATE = {
 		urlsExcluded: [],
 		urlsRemoved: [],
 		recentChange: false,	
+		privateUrlIndex: 0,
+		publicUrlIndex: 0,
+		settingsUrlIndex: 0
 	}
 };
 

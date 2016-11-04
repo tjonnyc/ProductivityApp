@@ -142,10 +142,10 @@ export default class UrlCategoryView extends Component {
 							    <h3 className="panel-title">Detailed Information...</h3>
 							  </div>
 							  <div className="panel-body">
-					    		<Website_Table id="displayedTable" updateCategory={this.props.updateCategory} totalNumDays={this.props.main.totalNumDays} totalTime={this.props.main.totalTime} userid={this.props.main.userid} websites={this.props.main.websites.slice(0,8).filter(this.returnNotExluded)} />
+					    		<Website_Table id="displayedTable" updateCategory={this.props.updateCategory} totalNumDays={this.props.main.totalNumDays} totalTime={this.props.main.totalTime} userid={this.props.main.userid} type={"Private"} urlIndex={this.props.main.privateUrlIndex} websites={this.props.main.websites.filter(this.returnNotExluded)} />
 								  <ul className="pager">
-								    <li className="previous"><a href="#">&larr; Previous 10</a></li>
-								    <li className="next"><a href="#">Next 10 &rarr;</a></li>
+								    <li className="previous"><a href="#" id={"Private Previous"} onClick={this.props.changeUrlIndex}>&larr; Previous 10</a></li>
+								    <li className="next"><a href="#" id={"Private Next"} onClick={this.props.changeUrlIndex}>Next 10 &rarr;</a></li>
 								  </ul>
 							  </div>
 							</div>														
@@ -156,10 +156,10 @@ export default class UrlCategoryView extends Component {
 							    <h3 className="panel-title">Detailed Information...</h3>
 							  </div>
 							  <div className="panel-body">
-					    		<Website_Table id="displayedTable" updateCategory={this.props.updateCategory} totalNumDays={this.props.main.totalNumDays} totalTime={this.props.main.totalPublicTime} userid={this.props.main.userid} websites={this.props.main.publicWebsites.slice(0,8).filter(this.returnNotExluded)} />
+					    		<Website_Table id="displayedTable" updateCategory={this.props.updateCategory} totalNumDays={this.props.main.totalNumDays} totalTime={this.props.main.totalPublicTime} userid={this.props.main.userid} type={"Public"} urlIndex={this.props.main.publicUrlIndex} websites={this.props.main.publicWebsites.filter(this.returnNotExluded)} />
 								  <ul className="pager">
-								    <li className="previous"><a href="#">&larr; Previous 10</a></li>
-								    <li className="next"><a href="#">Next 10 &rarr;</a></li>
+								    <li className="previous"><a href="#" id={"Public Previous"} onClick={this.props.changeUrlIndex}>&larr; Previous 10</a></li>
+								    <li className="next"><a href="#" id={"Public Next"} onClick={this.props.changeUrlIndex}>Next 10 &rarr;</a></li>
 								  </ul>
 							  </div>
 							</div>														

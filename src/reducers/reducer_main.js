@@ -220,6 +220,42 @@ function updateDefaultCategories() {
   xhttp.send();   
 }
 
+function changeUrlIndex(state, id) {
+  if (id === 'Private Previous') {
+    if (state.privateUrlIndex > 0) {
+      return { privateUrlIndex: (state.privateUrlIndex - 10) }
+    } 
+    else {
+      return { privateUrlIndex: 0 }
+    }
+  } 
+  else if (id === 'Private Next') {
+    return { privateUrlIndex: state.privateUrlIndex + 10 }
+  }
+  else if (id === 'Public Previous') {
+    if (state.publicUrlIndex > 0) {
+      return { publicUrlIndex: state.publicUrlIndex - 10 }
+    }
+    else {
+      return { publicUrlIndex: 0 }
+    }
+  } 
+  else if (id === 'Public Next') {
+    return { publicUrlIndex: state.publicUrlIndex + 10 }
+  } 
+  else if (id === 'Settings Previous') {
+    if (state.settingsUrlIndex > 0) {
+      return { settingsUrlIndex: state.settingsUrlIndex - 10 }
+    }
+    else {
+      return { settingsUrlIndex: 0 }
+    }
+  }
+  else if (id === 'Settings Next') {
+    return { settingsUrlIndex: state.settingsUrlIndex + 10 }
+  }
+}
+
 function main(state = {}, action) {
   console.log(state, action);
   switch (action.type) {
@@ -237,6 +273,9 @@ function main(state = {}, action) {
       break;
     case 'REMOVE_URL':
       return Object.assign({}, state, removeUrl(state, action.url));
+      break;
+    case 'CHANGE_URL_INDEX':
+      return Object.assign({}, state, changeUrlIndex(state, action.id));
       break;
     case 'UPDATE_DEFAULT_CATEGORIES':
       updateDefaultCategories();

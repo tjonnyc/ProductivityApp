@@ -9,7 +9,6 @@ let actions = {
 	},
 
 	updateDatabase() {
-		console.log("Action Called");
 		return {
 			type: 'UPDATE_DATABASE'
 		}
@@ -43,6 +42,14 @@ let actions = {
 			type: 'UPDATE_DEFAULT_CATEGORIES',
 		}
 	},
+
+	changeUrlIndex(event) {
+		event.preventDefault();
+		return {
+			type: 'CHANGE_URL_INDEX',
+			id: event.target.id
+		}
+	}
 
 }
 
